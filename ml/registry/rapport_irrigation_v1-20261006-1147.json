@@ -1,0 +1,45 @@
+{
+  "version": "v1-20261006-1147",
+  "date": "2026-10-06T11:47:28",
+  "exemples": 5363,
+  "test_classique": {
+    "erreur_moyenne_pct": 3.56,
+    "dans_10_pct": 96.6,
+    "r2": 0.9672
+  },
+  "plante_inedite": {
+    "erreur_moyenne_pct": 3.74,
+    "dans_10_pct": 96.4,
+    "r2": 0.9651
+  },
+  "erreur_par_plante_inedite_pct": {
+    "Amarante (Loso)": 3.63,
+    "Arachide": 3.52,
+    "Aubergine": 3.12,
+    "Banane/Plantain": 4.59,
+    "Chou": 3.31,
+    "Gombo": 3.73,
+    "Manioc": 5.74,
+    "Maïs": 3.39,
+    "Papaye": 3.54,
+    "Patate douce": 3.35,
+    "Piment": 3.52,
+    "Poivron": 3.59,
+    "Tomate": 3.56
+  },
+  "plantes_entrainement": [
+    "Amarante (Loso)",
+    "Arachide",
+    "Aubergine",
+    "Banane/Plantain",
+    "Chou",
+    "Gombo",
+    "Manioc",
+    "Maïs",
+    "Papaye",
+    "Patate douce",
+    "Piment",
+    "Poivron",
+    "Tomate"
+  ]
+}

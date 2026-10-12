@@ -1,0 +1,55 @@
+/* Thème commun des pages de travail (parcelles, catalogue, analyse, comptes) : même identité que l'accueil.
+   Chargé après le style propre à chaque page : il le complète sans le réécrire. */
+:root{--menthe:#6fd3a6;--vert:#1f5130;--police:"Bricolage Grotesque","Segoe UI",system-ui,-apple-system,sans-serif}
+body{font-family:var(--police)}
+h1,h2,h3{font-family:var(--police);letter-spacing:-.015em}
+
+/* ----- bandeau : photos des cultures qui défilent derrière le titre ----- */
+header{position:relative;overflow:hidden;background:#0f2e1c;color:#fff;padding:28px 28px 24px;min-height:124px}
+header>:not(.fond):not(.voile):not(.ferme-session){position:relative}
+header h1{margin:0;font-size:1.65rem;font-weight:800;letter-spacing:-.025em}
+header p{margin:4px 0 0;color:rgba(255,255,255,.88)}
+header a{color:var(--menthe);font-weight:600}
+header .fond{position:absolute;inset:0;background:
+  repeating-linear-gradient(100deg,transparent 0 46px,rgba(143,209,158,.07) 46px 50px),linear-gradient(120deg,#0f2e1c,#1b4a2f)}
+header .diapo{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease}
+header .diapo.on{opacity:1}
+header .voile{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,30,18,.9) 0%,rgba(8,30,18,.6) 60%,rgba(8,30,18,.45) 100%)}
+@media(prefers-reduced-motion:reduce){header .diapo{transition:none}}
+
+/* ----- boutons et champs ----- */
+button.p{background:var(--vert);border-color:var(--vert);color:#fff;font-weight:600}
+button.p:hover{background:#17301f;border-color:#17301f}
+button{border-radius:10px}
+input,select{border-radius:10px}
+:focus-visible{outline:3px solid #7fb6dc;outline-offset:2px}
+
+/* ----- cartes des parcelles : photo de la culture en tête ----- */
+.page-parcelles .carte,.page-catalogue .carte{border-radius:16px;box-shadow:0 1px 3px rgba(23,48,31,.08);transition:box-shadow .15s,border-color .15s}
+.page-parcelles .carte:hover,.page-catalogue .carte:hover{box-shadow:0 6px 18px rgba(23,48,31,.14)}
+.page-parcelles .carte,.page-catalogue .carte.avec-photo{padding:0;overflow:hidden}
+.page-parcelles .carte,.page-catalogue .carte{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch}   /* un bouton centre son contenu : on l'aligne en haut */
+.page-catalogue .carte.avec-photo .corps{padding:12px 16px 14px}
+.page-catalogue .carte .vignette{height:96px}
+.vignette{position:relative;height:118px;background:#1c4a33 center/cover no-repeat}
+.vignette.sans{background:
+  repeating-linear-gradient(90deg,transparent 0 14px,rgba(143,209,158,.16) 14px 17px),linear-gradient(160deg,#1c4a33,#143a27)}
+.vignette:empty::after{background:none}
+.vignette::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(8,30,18,.7))}
+.vignette .culture{position:absolute;left:14px;bottom:10px;z-index:1;color:#fff;font-weight:700;font-size:1.02rem;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.page-parcelles .carte .corps{padding:12px 16px 14px}
+.page-parcelles .carte .corps small{display:block}
+dialog{border-radius:20px}
+.eau,.gcarte,.alerte{border-radius:14px}
+
+/* ----- téléphone : on pilote une vanne depuis le champ ----- */
+@media(max-width:700px){
+  header{padding:20px 16px 18px;min-height:0}header h1{font-size:1.3rem}
+  .barre{padding:12px 16px;gap:8px}.barre div{flex:1 1 130px}.barre input{width:100%}
+  .bilan,.alertes,.rien,.eau,.graph{margin-left:0;margin-right:0}
+  .bilan{padding:12px 16px}.alertes{margin:12px 16px 0}.rien{margin:12px 16px 0}.eau{margin:16px 16px 0}.graph{padding:0 16px 30px}
+  .grille{padding:0 16px 24px;grid-template-columns:1fr}
+  button,select,input{min-height:44px}
+  .actions{gap:10px}.actions button{flex:1 1 130px}
+  dialog{width:100%;max-width:none;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:92vh}
+}

@@ -1,0 +1,27 @@
+# Secrets : ne jamais publier
+.env
+*.env
+!.env.example
+
+# Base de données et sauvegardes
+*.db
+*.db-wal
+*.db-shm
+apps/api/sauvegardes/
+sauvegardes/
+*.dump
+
+# Modèles d'IA (reconstruits par Docker à l'installation)
+*.joblib
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Divers
+*.whl
+.vscode/
+.DS_Store

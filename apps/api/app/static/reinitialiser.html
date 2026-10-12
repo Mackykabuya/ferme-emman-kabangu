@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nouveau mot de passe · Ferme Emman Kabangu</title>
+<link rel="icon" href="/tableau-de-bord/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="/tableau-de-bord/public.css">
+</head><body>
+<div class="plein">
+  <div class="fond" aria-hidden="true"></div><div class="voile" aria-hidden="true"></div>
+  <main class="verre">
+    <img class="logo-carre" src="/tableau-de-bord/logo.svg" alt="">
+    <h1 class="nom">Nouveau mot de passe</h1>
+    <div id="formulaire">
+      <p class="texte">Choisissez votre nouveau mot de passe.</p>
+      <form id="f">
+        <label>Nouveau mot de passe<input id="mdp" type="password" autocomplete="new-password" required minlength="8" maxlength="200" autofocus>
+          <span class="aide">8 caractères minimum.</span></label>
+        <label>Confirmer<input id="mdp2" type="password" autocomplete="new-password" required minlength="8" maxlength="200"></label>
+        <div id="msg" class="message err" role="alert"></div>
+        <button class="bouton menthe" id="ok">Enregistrer</button>
+      </form>
+    </div>
+    <div id="fait" hidden>
+      <p class="texte">Votre mot de passe a été changé. Vous pouvez vous connecter.</p>
+      <a class="bouton menthe" href="/tableau-de-bord/login.html">Se connecter</a>
+    </div>
+    <p class="lien" id="relance" hidden><a href="/tableau-de-bord/mot-de-passe-oublie.html">Demander un nouveau lien</a></p>
+  </main>
+  <p class="legende"></p><button class="pause" type="button"></button>
+</div>
+<script src="/tableau-de-bord/fond.js"></script>
+<script>
+const $ = i => document.getElementById(i);
+const jeton = (new URLSearchParams(location.hash.slice(1))).get("jeton") || "";
+if (!jeton) { $("msg").textContent = "Lien incomplet. Ouvrez-le en entier depuis votre e-mail."; $("ok").disabled = true; $("relance").hidden = false; }
+$("f").onsubmit = async e => {
+  e.preventDefault(); $("msg").textContent = "";
+  if ($("mdp").value !== $("mdp2").value) { $("msg").textContent = "Les deux mots de passe ne sont pas identiques."; $("mdp2").focus(); return; }
+  $("ok").disabled = true;
+  try {
+    const r = await fetch("/auth/reinitialiser", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({jeton, nouveau: $("mdp").value})});
+    if (r.status !== 204) { const d = await r.json().catch(() => ({})); if (r.status === 400) $("relance").hidden = false; throw new Error(typeof d.detail === "string" ? d.detail : "Mot de passe refusé."); }
+    history.replaceState(null, "", location.pathname);
+    $("formulaire").hidden = true; $("fait").hidden = false; $("relance").hidden = true;
+  } catch (err) { $("msg").textContent = err.message; $("ok").disabled = false; }
+};
+</script></body></html>

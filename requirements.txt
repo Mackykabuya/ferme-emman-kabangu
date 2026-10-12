@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+sqlalchemy
+alembic
+psycopg[binary]
+pyjwt
+argon2-cffi
+httpx
+paho-mqtt
+pandas
+numpy
+scikit-learn
+lightgbm
+joblib
+jupyter
+pytest

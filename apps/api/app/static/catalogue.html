@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="icon" href="logo.svg" type="image/svg+xml"><link rel="stylesheet" href="marque.css"><script src="auth.js"></script><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferme Emman Kabangu · Catalogue des plantes</title>
+<style>
+:root{--fond:#eef2ec;--encre:#17301f;--doux:#5d6f62;--ligne:#d5ddd3;--eau:#1d6fa5;--ok:#2e7d4f;--alerte:#b7791f;--danger:#b3382c}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+header{background:var(--encre);color:#eef6ea;padding:16px 24px}header h1{margin:0;font-size:1.3rem}header p{margin:2px 0 0;color:#a9c4b0}header a{color:#bfe0c9}
+.barre{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 24px;background:#fff;border-bottom:1px solid var(--ligne)}
+input,select,textarea{padding:7px 9px;border:1px solid var(--ligne);border-radius:6px;font:inherit;color:var(--encre);background:#fff}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--ligne);background:#fff;color:var(--encre);padding:7px 12px}
+button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:600}button.d{color:var(--danger);border-color:var(--danger)}
+:focus-visible{outline:3px solid #7fb6dc;outline-offset:2px}
+.bilan{padding:12px 24px;color:var(--doux)}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;padding:0 24px 24px}
+.carte{background:#fff;border:1px solid var(--ligne);border-left:6px solid var(--ok);border-radius:10px;padding:14px;text-align:left;cursor:pointer;display:block;width:100%}
+.carte:hover{border-color:var(--eau)}.carte h3{margin:0}.carte small{color:var(--doux)}.carte.off{opacity:.6;border-left-color:var(--doux)}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--fond);color:var(--doux);font-size:.82rem;margin:8px 6px 4px 0}.badge.off2{background:var(--danger);color:#fff}
+.ligne{margin:3px 0;font-size:.93rem}
+dialog{border:0;border-radius:12px;padding:22px;max-width:760px;width:calc(100% - 24px);max-height:92vh;overflow:auto;box-shadow:0 10px 40px #0004}
+dialog::backdrop{background:#0006}h2{margin:0 0 4px}h4{margin:18px 0 2px}ul{margin:4px 0;padding-left:22px}
+.note{color:var(--doux);font-size:.88rem;margin:2px 0 6px}.champ{display:block;margin-top:8px;font-size:.88rem;color:var(--doux)}.champ input,.champ select{width:100%}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}@media(max-width:560px){.duo{grid-template-columns:1fr}}
+textarea{width:100%}.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.msg{margin-top:12px;min-height:1.4em}.msg.ok{color:var(--ok)}.msg.err{color:var(--danger)}li button{padding:1px 8px;font-size:.82rem;margin-left:6px}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script></head><body class="page-catalogue">
+<header><h1><img class="logo" src="logo.svg" alt="">Ferme Emman Kabangu</h1><p>Catalogue des plantes · <a href="parcelles.html">Retour aux parcelles</a></p></header>
+<div class="barre">
+  <label>Catégorie <select id="cat"></select></label>
+  <label><input type="checkbox" id="inactifs"> Afficher les plantes désactivées</label>
+  <button class="p" id="ajout" data-min-role="agronome">Ajouter une plante</button>
+</div>
+<div class="bilan" id="bilan" aria-live="polite"></div>
+<div class="grille" id="grille"></div>
+<dialog id="fiche"></dialog>
+<script>
+const $ = id => document.getElementById(id);
+const SECTIONS = [
+  ["Besoin en eau selon l'âge de la plante", "Combien d'eau la plante consomme par rapport à un gazon bien arrosé : 0,3 = très peu, 1,2 = beaucoup.", [
+    ["kc_germination", "À la germination", 0.05], ["kc_vegetative", "En croissance", 0.05], ["kc_floraison", "À la floraison", 0.05], ["kc_fructification", "À la fructification (récolte)", 0.05]]],
+  ["Eau et conduite de la culture", "", [
+    ["humidite_sol_min", "Humidité idéale du sol : minimum (%)", 1], ["humidite_sol_max", "Humidité idéale du sol : maximum (%)", 1],
+    ["tolerance_hydrique", "Résistance à la sécheresse (1 = fragile, 5 = très résistante)", 1], ["densite_plants_ha", "Nombre de plants par hectare", 1],
+    ["debit_plant_lph", "Eau apportée par plant (litres/heure)", 0.5]]],
+  ["Sol idéal", "Valeurs données par les sondes (en mg/kg pour l'azote, le phosphore et le potassium).", [
+    ["ph_min", "Acidité (pH) : minimum", 0.1], ["ph_max", "Acidité (pH) : maximum", 0.1], ["n_min", "Azote (N) : minimum", 1], ["n_max", "Azote (N) : maximum", 1],
+    ["p_min", "Phosphore (P) : minimum", 1], ["p_max", "Phosphore (P) : maximum", 1], ["k_min", "Potassium (K) : minimum", 1], ["k_max", "Potassium (K) : maximum", 1],
+    ["ec_max_dsm", "Sel maximum supporté (dS/m)", 0.1]]],
+  ["Température du sol idéale", "", [["temp_opt_min", "Minimum (°C)", 1], ["temp_opt_max", "Maximum (°C)", 1]]]
+];
+const CLES = SECTIONS.flatMap(s => s[2].map(f => f[0]));
+const LABEL = {nom: "Nom", categorie: "Catégorie", ...Object.fromEntries(SECTIONS.flatMap(s => s[2].map(f => [f[0], f[1]])))};
+let plantes = [];
+
+function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+function champ(id, label, type, step, valeur) {
+  const l = el("label", "champ", label), i = el("input"); i.id = "f_" + id; i.type = type; if (step) i.step = step; i.value = valeur ?? ""; l.appendChild(i); return l;
+}
+function msg(t, erreur) { const m = $("msg"); if (m) { m.textContent = t; m.className = "msg " + (erreur ? "err" : "ok"); } }
+function texteErreur(det) {
+  if (typeof det === "string") return det;
+  if (!Array.isArray(det)) return "Valeur refusée. Vérifiez les champs.";
+  return det.map(e => {
+    const k = e.loc && e.loc[e.loc.length - 1];
+    const t = e.type === "value_error" ? e.msg.replace(/^Value error, /, "") : /^greater/.test(e.type) ? "valeur trop basse" : /^less/.test(e.type) ? "valeur trop haute" : /missing/.test(e.type) ? "à remplir" : "valeur invalide";
+    return (LABEL[k] ? LABEL[k] + " : " : "") + t;
+  }).join(" · ");
+}
+async function api(url, m, b) {
+  const r = await fetch(url, m ? {method: m, headers: {"Content-Type": "application/json"}, body: b === undefined ? undefined : JSON.stringify(b)} : undefined);
+  if (r.status === 204) return null;
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(texteErreur(d.detail));
+  return d;
+}
+
+async function charger() {
+  plantes = await api("/plants" + ($("inactifs").checked ? "?include_inactive=true" : ""));
+  const cats = [...new Set(plantes.map(p => p.categorie))].sort(), cur = $("cat").value;
+  $("cat").replaceChildren(new Option("Toutes", "")); cats.forEach(c => $("cat").add(new Option(c, c)));
+  $("cat").value = cats.includes(cur) ? cur : "";
+  afficher();
+}
+let photos = [];
+photosPromise.then(l => { photos = l; if (plantes.length) afficher(); });
+function afficher() {
+  const c = $("cat").value, liste = plantes.filter(p => !c || p.categorie === c), g = $("grille"); g.replaceChildren();
+  $("bilan").textContent = `${liste.length} plante(s)`;
+  liste.forEach(p => {
+    const b = el("button", "carte" + (p.is_active ? "" : " off")); b.type = "button"; b.onclick = () => ouvrir(p);
+    const ph = photoDe(p.nom, photos);
+    if (ph) { const vig = el("div", "vignette"); vig.style.backgroundImage = `url("${ph.url}")`; b.appendChild(vig); b.classList.add("avec-photo"); }
+    const cor = el("div", "corps"); b.appendChild(cor);
+    cor.appendChild(el("h3", "", p.nom)); cor.appendChild(el("small", "", p.categorie));
+    const badges = el("div"); badges.appendChild(el("span", "badge", p.source === "seed" ? "Catalogue de départ" : "Ajoutée par vous"));
+    if (!p.is_active) badges.appendChild(el("span", "badge off2", "Désactivée")); cor.appendChild(badges);
+    [`Humidité idéale du sol : ${p.humidite_sol_min} à ${p.humidite_sol_max} %`, `Résistance à la sécheresse : ${p.tolerance_hydrique} sur 5`,
+     `${p.varietes.length} variété(s) · version ${p.params_version}`].forEach(t => cor.appendChild(el("div", "ligne", t)));
+    g.appendChild(b);
+  });
+}
+
+function ouvrir(p) {
+  const f = $("fiche"), zoneH = el("div"); f.replaceChildren();
+  f.appendChild(el("h2", "", p ? p.nom : "Nouvelle plante"));
+  if (p) f.appendChild(el("p", "note", `Version ${p.params_version} · ${p.source === "seed" ? "catalogue de départ" : "ajoutée par vous"}${p.is_active ? "" : " · désactivée"}`));
+  const cats = el("datalist"); cats.id = "cats"; [...new Set(plantes.map(x => x.categorie))].forEach(c => cats.appendChild(new Option(c))); f.appendChild(cats);
+  if (!p) {
+    const l = el("label", "champ", "Partir d'une plante proche (facultatif : recopie ses valeurs)"), s = el("select");
+    s.appendChild(new Option("Formulaire vide", "")); plantes.filter(x => x.is_active).forEach(x => s.appendChild(new Option(x.nom, x.id)));
+    s.onchange = () => { const src = plantes.find(x => x.id == s.value); if (src) CLES.concat("categorie").forEach(k => $("f_" + k).value = src[k]); };
+    l.appendChild(s); f.appendChild(l);
+  }
+  f.appendChild(champ("nom", "Nom de la plante", "text", null, p && p.nom));
+  const cat = champ("categorie", "Catégorie (choisissez ou écrivez-en une nouvelle)", "text", null, p && p.categorie); cat.querySelector("input").setAttribute("list", "cats"); f.appendChild(cat);
+  SECTIONS.forEach(([titre, aide, champs]) => {
+    f.appendChild(el("h4", "", titre)); if (aide) f.appendChild(el("p", "note", aide));
+    const g = el("div", "duo"); champs.forEach(([k, lab, st]) => g.appendChild(champ(k, lab, "number", st, p && p[k]))); f.appendChild(g);
+  });
+  f.appendChild(el("h4", "", "Variétés"));
+  if (p) {
+    const ul = el("ul");
+    p.varietes.forEach(v => {
+      const li = el("li", "", v.nom), b = el("button", "d", "retirer"); b.type = "button";
+      b.onclick = async () => { try { ouvrir(await api(`/plants/${p.id}/varietes/${v.id}`, "DELETE")); charger(); } catch (e) { msg(e.message, true); } };
+      Ferme.reserver(b, "agronome"); li.appendChild(b); ul.appendChild(li);
+    });
+    f.appendChild(ul);
+    const ligne = el("div", "actions"), n = el("input"), b = el("button", "", "Ajouter la variété"); n.placeholder = "Nouvelle variété"; b.type = "button";
+    b.onclick = async () => { if (!n.value.trim()) return; try { ouvrir(await api(`/plants/${p.id}/varietes`, "POST", {nom: n.value.trim()})); charger(); } catch (e) { msg(e.message, true); } };
+    ligne.append(n, b); Ferme.reserver(ligne, "agronome"); f.appendChild(ligne);
+    f.appendChild(el("p", "note", "Ajouter ou retirer une variété recharge la fiche : enregistrez d'abord vos autres modifications."));
+  } else {
+    const t = el("textarea"); t.id = "f_varietes"; t.rows = 3; t.placeholder = "Une variété par ligne (facultatif)"; f.appendChild(t);
+  }
+  const m = el("div", "msg"); m.id = "msg"; m.setAttribute("aria-live", "polite");
+  const a = el("div", "actions"), ok = el("button", "p", p ? "Enregistrer les modifications" : "Ajouter la plante"); ok.onclick = () => enregistrer(p); Ferme.reserver(ok, "agronome"); a.appendChild(ok);
+  if (p) {
+    const ac = el("button", p.is_active ? "d" : "", p.is_active ? "Désactiver" : "Réactiver"); ac.onclick = () => basculer(p); Ferme.reserver(ac, "agronome"); a.appendChild(ac);
+    const hi = el("button", "", "Historique des versions"); hi.onclick = () => historique(p, zoneH); a.appendChild(hi);
+  }
+  const fe = el("button", "", "Fermer"); fe.onclick = () => f.close(); a.appendChild(fe);
+  f.append(m, a, zoneH);
+  if (!f.open) f.showModal();
+}
+
+async function enregistrer(p) {
+  const v = {nom: $("f_nom").value.trim(), categorie: $("f_categorie").value.trim()};
+  if (!v.nom || !v.categorie) return msg("Le nom et la catégorie sont obligatoires.", true);
+  for (const k of CLES) { const t = $("f_" + k).value; if (t === "") return msg("Remplissez tous les champs numériques.", true); v[k] = parseFloat(t); }
+  try {
+    if (p) {
+      const ch = Object.fromEntries(Object.entries(v).filter(([k, x]) => x !== p[k]));
+      if (!Object.keys(ch).length) return msg("Aucune modification à enregistrer.", false);
+      const r = await api(`/plants/${p.id}`, "PUT", ch); await charger(); ouvrir(r);
+      msg(`Enregistré : version ${r.params_version}. Les parcelles de cette culture utilisent déjà les nouveaux paramètres.`, false);
+    } else {
+      const noms = ($("f_varietes").value || "").split("\n").map(x => x.trim()).filter(Boolean);
+      const r = await api("/plants", "POST", {...v, varietes: noms}); await charger(); ouvrir(r);
+      msg("Plante ajoutée. Vous pouvez maintenant créer une parcelle avec cette culture.", false);
+    }
+  } catch (e) { msg(e.message, true); }
+}
+async function basculer(p) {
+  if (p.is_active && !confirm(`Désactiver « ${p.nom} » ? Les parcelles qui l'utilisent n'auront plus de diagnostic ni de conseil d'arrosage tant qu'elle reste désactivée.`)) return;
+  try {
+    let r;
+    if (p.is_active) { await api(`/plants/${p.id}`, "DELETE"); r = await api(`/plants/${p.id}`); } else r = await api(`/plants/${p.id}/reactivate`, "POST");
+    await charger(); ouvrir(r); msg(r.is_active ? "Plante réactivée." : "Plante désactivée.", false);
+  } catch (e) { msg(e.message, true); }
+}
+async function historique(p, zone) {
+  zone.replaceChildren();
+  try {
+    const h = await api(`/plants/${p.id}/historique`), ul = el("ul");
+    const lignes = h.map((v, i) => {
+      const iso = /(Z|[+-]\d\d:\d\d)$/.test(v.changed_at) ? v.changed_at : v.changed_at + "Z";
+      let txt = {create: "Création", deactivate: "Désactivée", reactivate: "Réactivée"}[v.action];
+      if (v.action === "update") {
+        const prev = h[i - 1].snapshot;
+        txt = Object.keys(v.snapshot).filter(k => v.snapshot[k] !== prev[k]).map(k => `${LABEL[k] || k} : ${prev[k]} → ${v.snapshot[k]}`).join(" ; ") || "Mise à jour";
+      }
+      return `v${v.version} · ${new Date(iso).toLocaleString("fr-FR", {dateStyle: "short", timeStyle: "short"})} · ${txt}`;
+    });
+    lignes.reverse().forEach(t => ul.appendChild(el("li", "", t)));
+    zone.appendChild(el("h4", "", "Historique des versions")); zone.appendChild(ul);
+  } catch (e) { msg(e.message, true); }
+}
+
+$("inactifs").onchange = charger; $("cat").onchange = afficher; $("ajout").onclick = () => ouvrir(null);
+charger().catch(() => { $("bilan").textContent = "Le serveur ne répond pas. Vérifiez qu'il est lancé."; });
+</script></body></html>

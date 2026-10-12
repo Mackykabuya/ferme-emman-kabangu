@@ -1,0 +1,62 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ferme
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?à définir dans .env}
+      POSTGRES_DB: ferme
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ferme -d ferme"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://ferme:${POSTGRES_PASSWORD}@db:5432/ferme
+      ADMIN_MOT_DE_PASSE: ${ADMIN_MOT_DE_PASSE:-}
+      FERME_ENV: production
+      FERME_HTTPS: ${FERME_HTTPS:-1}
+      SIMULATION_SECONDES: ${SIMULATION_SECONDES:-5}
+      SAUVEGARDES_DOSSIER: /data/sauvegardes
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      FERME_URL: ${FERME_URL:-}
+      SMTP_HOTE: ${SMTP_HOTE:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_UTILISATEUR: ${SMTP_UTILISATEUR:-}
+      SMTP_MOT_DE_PASSE: ${SMTP_MOT_DE_PASSE:-}
+      SMTP_DE: ${SMTP_DE:-}
+      SMTP_SSL: ${SMTP_SSL:-}
+    volumes:
+      - sauvegardes:/data/sauvegardes
+      - ./apps/api/app/static/photos:/app/apps/api/app/static/photos
+      - ./apps/api/app/static/site.json:/app/apps/api/app/static/site.json
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [api]
+    ports: ["80:80", "443:443"]
+    environment:
+      FERME_DOMAINE: ${FERME_DOMAINE:?à définir dans .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+
+volumes:
+  pgdata:
+  sauvegardes:
+  caddy_data:

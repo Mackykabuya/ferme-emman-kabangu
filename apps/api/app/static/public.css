@@ -1,0 +1,60 @@
+/* Pages publiques (accueil, connexion, inscription) : fond de photos qui défilent + cartes vitrées. */
+:root{--feuille:#17301f;--vert:#1f5130;--eau:#1d6fa5;--fond:#eef2ec;--doux:#51645a;--ligne:#cfd8cc;--pale:#bfe0c9;--menthe:#6fd3a6;
+  --menthe-fort:#6fc7a1;--police:"Bricolage Grotesque","Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--fond);color:var(--feuille);font:400 1.0625rem/1.6 var(--police)}
+a{color:inherit}
+:focus-visible{outline:3px solid #9cd8ff;outline-offset:3px;border-radius:6px}
+.cadre{width:min(1160px,100% - 40px);margin-inline:auto}
+
+/* ----- fond ----- */
+.fond{position:absolute;inset:0;overflow:hidden;background:#0f2e1c}
+.diapo{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease}
+.diapo.on{opacity:1}
+.diapo.zoom{animation:zoom 10s linear forwards}
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.09)}}
+.fond.sans-photo{background:
+  repeating-linear-gradient(100deg,transparent 0 46px,rgba(143,209,158,.07) 46px 50px),
+  radial-gradient(90% 70% at 78% 30%,#2c6b45 0%,transparent 60%),
+  linear-gradient(160deg,#0f2e1c,#1b4a2f 60%,#123824)}
+.voile{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,30,18,.82) 0%,rgba(8,30,18,.5) 55%,rgba(8,30,18,.6) 100%)}
+.legende{position:absolute;left:24px;bottom:18px;margin:0;color:rgba(255,255,255,.85);font-size:.9rem;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.legende:empty{display:none}
+.pause{position:absolute;right:20px;bottom:14px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(8,30,18,.5);color:#fff;font-size:1rem;cursor:pointer;display:none}
+.fond.avec-photos~.pause{display:block}
+.pause:hover{background:rgba(8,30,18,.8)}
+@media(prefers-reduced-motion:reduce){.diapo{transition:none}.diapo.zoom{animation:none}}
+
+/* ----- carte vitrée ----- */
+.verre{color:#fff;background:rgba(24,76,48,.42);border:1px solid rgba(255,255,255,.22);border-radius:28px;padding:38px;
+  -webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);box-shadow:0 20px 60px rgba(0,0,0,.28)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.verre{background:rgba(18,56,36,.92)}}
+.verre h1,.verre h2{margin:0}
+.logo-carre{display:block;width:70px;height:70px;border-radius:18px;margin-bottom:22px}
+.verre .nom{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+.verre .texte{margin:0 0 24px;color:rgba(255,255,255,.88);font-size:1.02rem;line-height:1.5}
+.bouton{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px 18px;border-radius:14px;font:600 1.08rem var(--police);text-decoration:none;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+.bouton+.bouton{margin-top:14px}
+.bouton.menthe{background:var(--menthe-fort);color:#0c2a19}
+.bouton.menthe:hover{background:#86d7b4}
+.bouton.contour{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.bouton.contour:hover{background:rgba(255,255,255,.12)}
+.bouton:disabled{opacity:.6;cursor:wait}
+.verre .pied-carte{margin:22px 0 0;text-align:center;color:rgba(255,255,255,.65);font-size:.88rem}
+
+/* ----- formulaires sur verre ----- */
+.verre label{display:block;font-weight:600;font-size:.92rem;margin-top:14px}
+.verre input{width:100%;margin-top:5px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.13);color:#fff;font:inherit}
+.verre input::placeholder{color:rgba(255,255,255,.5)}
+.verre input:focus-visible{background:rgba(255,255,255,.2)}
+.verre .aide{font-weight:400;font-size:.82rem;color:rgba(255,255,255,.7);margin:4px 0 0}
+.message{min-height:1.4em;margin:14px 0 0;font-weight:600;font-size:.95rem}
+.message.err{color:#ffc3b8}.message.ok{color:#b9f0d3}
+.verre .lien{margin:18px 0 0;text-align:center;font-size:.95rem;color:rgba(255,255,255,.85)}
+.verre .lien a{font-weight:600}
+.verre form .bouton{margin-top:22px}
+
+/* ----- page seule (connexion, inscription) ----- */
+.plein{position:relative;min-height:100vh;display:grid;place-items:center;padding:28px 0;overflow:hidden}
+.plein .verre{position:relative;width:min(440px,100% - 32px)}

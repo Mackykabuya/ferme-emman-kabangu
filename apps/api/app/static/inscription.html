@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Créer un compte · Ferme Emman Kabangu</title>
+<link rel="icon" href="/tableau-de-bord/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="/tableau-de-bord/public.css">
+</head><body>
+<div class="plein">
+  <div class="fond" aria-hidden="true"></div><div class="voile" aria-hidden="true"></div>
+  <main class="verre">
+    <img class="logo-carre" src="/tableau-de-bord/logo.svg" alt="">
+    <h1 class="nom">Créer un compte</h1>
+    <div id="formulaire">
+      <p class="texte">Votre demande sera examinée par l'administrateur de la ferme, qui choisira ce que vous pouvez voir et faire.</p>
+      <form id="f">
+        <label>Nom complet<input id="nom" autocomplete="name" required minlength="2" maxlength="80" autofocus></label>
+        <label>Adresse e-mail<input id="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" required maxlength="254">
+          <span class="aide">Elle servira à vous connecter et à retrouver votre mot de passe.</span></label>
+        <label>Mot de passe<input id="mdp" type="password" autocomplete="new-password" required minlength="8" maxlength="200">
+          <span class="aide">8 caractères minimum.</span></label>
+        <label>Confirmer le mot de passe<input id="mdp2" type="password" autocomplete="new-password" required minlength="8" maxlength="200"></label>
+        <div id="msg" class="message err" role="alert"></div>
+        <button class="bouton menthe" id="ok">Envoyer ma demande</button>
+      </form>
+      <p class="lien">Déjà un compte ? <a href="/tableau-de-bord/login.html">Se connecter</a></p>
+    </div>
+    <div id="fait" hidden>
+      <p class="texte" id="fait-texte"></p>
+      <p class="texte">Vous pourrez vous connecter dès que l'administrateur l'aura accepté.</p>
+      <a class="bouton menthe" href="/">Retour à l'accueil</a>
+    </div>
+  </main>
+  <p class="legende"></p><button class="pause" type="button"></button>
+</div>
+<script src="/tableau-de-bord/fond.js"></script>
+<script>
+const $ = i => document.getElementById(i);
+function erreur(d) {
+  if (typeof d.detail === "string") return d.detail;
+  if (Array.isArray(d.detail)) return d.detail.map(e => { const k = e.loc && e.loc[e.loc.length - 1];
+    return ({nom: "Nom", email: "Adresse e-mail", mot_de_passe: "Mot de passe"}[k] || "Champ") + " : valeur refusée."; }).join(" ");
+  return "La demande a échoué. Réessayez.";
+}
+$("f").onsubmit = async e => {
+  e.preventDefault(); $("msg").textContent = "";
+  if ($("mdp").value !== $("mdp2").value) { $("msg").textContent = "Les deux mots de passe ne sont pas identiques."; $("mdp2").focus(); return; }
+  $("ok").disabled = true;
+  try {
+    const r = await fetch("/auth/inscription", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({nom: $("nom").value, email: $("email").value.trim(), mot_de_passe: $("mdp").value})});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(erreur(d));
+    $("fait-texte").textContent = d.message; $("formulaire").hidden = true; $("fait").hidden = false;
+  } catch (err) { $("msg").textContent = err.message; $("ok").disabled = false; }
+};
+</script></body></html>

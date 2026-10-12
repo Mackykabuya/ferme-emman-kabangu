@@ -1,0 +1,8 @@
+Déposez ici vos photos de plantes (jpg, jpeg, png, webp). Elles défilent toutes seules en fond de la page d'accueil,
+de connexion et d'inscription. Rechargez la page : pas besoin de redémarrer le serveur.
+
+- Le nom du fichier devient la légende : "manioc.jpg" s'affiche "Manioc".
+- Un numéro au début fixe l'ordre : "01-mais.jpg", "02-manioc.jpg" (le numéro n'est pas affiché).
+- Format conseillé : paysage, 1920 px de large, moins de 500 Ko chacune (la page se charge plus vite).
+- Utilisez vos propres photos, ou des photos libres de droits (Pexels, Unsplash, Wikimedia Commons) en respectant leur licence.
+- 30 photos au maximum.

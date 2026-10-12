@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mot de passe oublié · Ferme Emman Kabangu</title>
+<link rel="icon" href="/tableau-de-bord/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="/tableau-de-bord/public.css">
+</head><body>
+<div class="plein">
+  <div class="fond" aria-hidden="true"></div><div class="voile" aria-hidden="true"></div>
+  <main class="verre">
+    <img class="logo-carre" src="/tableau-de-bord/logo.svg" alt="">
+    <h1 class="nom">Mot de passe oublié</h1>
+    <div id="formulaire">
+      <p class="texte">Entrez l'adresse e-mail de votre compte : nous vous enverrons un lien pour choisir un nouveau mot de passe.</p>
+      <form id="f">
+        <label>Adresse e-mail<input id="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" required autofocus></label>
+        <div id="msg" class="message err" role="alert"></div>
+        <button class="bouton menthe" id="ok">Envoyer le lien</button>
+      </form>
+    </div>
+    <div id="fait" hidden>
+      <p class="texte" id="fait-texte"></p>
+      <p class="texte">Le lien est valable une heure. Sans accès à vos e-mails, demandez à l'administrateur de la ferme de vous en donner un.</p>
+    </div>
+    <p class="lien"><a href="/tableau-de-bord/login.html">Retour à la connexion</a></p>
+  </main>
+  <p class="legende"></p><button class="pause" type="button"></button>
+</div>
+<script src="/tableau-de-bord/fond.js"></script>
+<script>
+const $ = i => document.getElementById(i);
+$("f").onsubmit = async e => {
+  e.preventDefault(); $("msg").textContent = ""; $("ok").disabled = true;
+  try {
+    const r = await fetch("/auth/mot-de-passe-oublie", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({email: $("email").value.trim()})});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Adresse e-mail invalide.");
+    $("fait-texte").textContent = d.message; $("formulaire").hidden = true; $("fait").hidden = false;
+  } catch (err) { $("msg").textContent = err.message; $("ok").disabled = false; }
+};
+</script></body></html>
