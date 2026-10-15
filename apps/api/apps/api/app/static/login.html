@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connexion · Ferme Emman Kabangu</title>
+<link rel="icon" href="/tableau-de-bord/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="/tableau-de-bord/public.css">
+</head><body>
+<div class="plein">
+  <div class="fond" aria-hidden="true"></div><div class="voile" aria-hidden="true"></div>
+  <main class="verre">
+    <img class="logo-carre" src="/tableau-de-bord/logo.svg" alt="">
+    <h1 class="nom">Connexion</h1>
+    <p class="texte">Connectez-vous pour suivre et piloter la ferme.</p>
+    <form id="f">
+      <label>Adresse e-mail<input id="id" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+        <span class="aide">Un ancien identifiant (comme « admin ») fonctionne aussi.</span></label>
+      <label>Mot de passe<input id="mdp" type="password" autocomplete="current-password" required></label>
+      <div id="err" class="message err" role="alert"></div>
+      <button class="bouton menthe" id="ok">Se connecter</button>
+    </form>
+    <p class="lien"><a href="/tableau-de-bord/mot-de-passe-oublie.html">Mot de passe oublié ?</a></p>
+    <p class="lien">Pas encore de compte ? <a href="/tableau-de-bord/inscription.html">Créer un compte</a></p>
+    <p class="lien"><a href="/">Retour à l'accueil</a></p>
+  </main>
+  <p class="legende"></p><button class="pause" type="button"></button>
+</div>
+<script src="/tableau-de-bord/auth.js"></script>
+<script src="/tableau-de-bord/fond.js"></script>
+<script>
+const $ = i => document.getElementById(i);
+$("f").onsubmit = async e => {
+  e.preventDefault(); $("err").textContent = ""; $("ok").disabled = true;
+  try {
+    const r = await fetch("/auth/connexion", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({identifiant: $("id").value, mot_de_passe: $("mdp").value})});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Vérifiez les champs.");
+    Ferme.ouvrirSession(d);
+    const retour = new URLSearchParams(location.search).get("retour");
+    location.replace(/^[a-z]+\.html$/.test(retour || "") ? "/tableau-de-bord/" + retour : "/tableau-de-bord/parcelles.html");
+  } catch (err) { $("err").textContent = err.message; $("mdp").value = ""; $("ok").disabled = false; }
+};
+</script></body></html>

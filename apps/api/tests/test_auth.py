@@ -281,3 +281,14 @@ def test_photos_du_diaporama(vierge, tmp_path, monkeypatch):
     liste = c.get("/photos").json()["photos"]
     assert [p["nom"] for p in liste] == ["Maïs", "Manioc", "Tomate cerise"]          # ordre par nom, numéro retiré, .txt ignoré
     assert liste[2]["url"] == "/tableau-de-bord/photos/tomate%20cerise.webp"
+
+
+def test_photos_extension_doublee_sous_windows(vierge, tmp_path, monkeypatch):
+    from app import main
+    monkeypatch.setattr(main, "STATIC", tmp_path)
+    (tmp_path / "photos").mkdir()
+    for nom in ("15-ananas.jpg.jpg", "16-avocat.JPG.jpg"):
+        (tmp_path / "photos" / nom).write_bytes(b"x")
+    liste = anonyme().get("/photos").json()["photos"]
+    assert [p["nom"] for p in liste] == ["Ananas", "Avocat"]                         # pas de « .jpg » dans la légende
+    assert liste[0]["url"].endswith("15-ananas.jpg.jpg")                             # le fichier, lui, est servi sous son vrai nom

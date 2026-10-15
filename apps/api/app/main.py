@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import Base, SessionLocal, engine
-from . import migration, simulation, sauvegarde
+from . import ajouts, migration, simulation, sauvegarde
 from sqlalchemy import text
 from .auth import creer_admin_initial, email_admin_depuis_env, exiger
 from .routers import admin, alertes, auth as auth_api, decision, eau, diagnostic, irrigation, meteo, parcelles, plants
@@ -28,6 +28,9 @@ async def lifespan(app: FastAPI):
             print(f"Catalogue initialisé : {n} plantes")
         if seed_parcelles(db):
             print("10 parcelles de démonstration créées")
+        nouveaux = ajouts.appliquer(db)
+        if nouveaux:
+            print("Ajouté :", ", ".join(nouveaux))
         cree = creer_admin_initial(db)
         email_admin_depuis_env(db)
         if cree:
@@ -141,7 +144,8 @@ def photos():
     fichiers = sorted((f for f in dossier.iterdir() if f.suffix.lower() in EXT_PHOTOS), key=lambda f: f.name.lower()) if dossier.is_dir() else []
     sortie = []
     for f in fichiers[:30]:
-        nom = re.sub(r"^\d+[-_ .]*", "", f.stem).replace("-", " ").replace("_", " ").strip() or f.stem
+        sans_ext = re.sub(r"(\.(jpe?g|png|webp|avif))+$", "", f.name, flags=re.I)        # « ananas.jpg.jpg » (extension doublée sous Windows) -> « ananas »
+        nom = re.sub(r"^\d+[-_ .]*", "", sans_ext).replace("-", " ").replace("_", " ").strip() or sans_ext
         sortie.append({"url": "/tableau-de-bord/photos/" + quote(f.name), "nom": nom[:1].upper() + nom[1:]})
     return {"photos": sortie}
 if STATIC.exists():  # interface web servie par l'API elle-même : aucune installation en plus

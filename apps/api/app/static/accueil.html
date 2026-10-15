@@ -84,12 +84,12 @@
 <main>
 <section class="section"><div class="cadre deux">
   <div>
-    <h2>Dix parcelles, dix cultures</h2>
+    <h2>Douze parcelles, douze cultures</h2>
     <p class="sous">Chaque parcelle a sa culture, son sol et son rythme. Le système suit chacune séparément.</p>
   </div>
   <figure class="plan">
-    <svg id="plan" viewBox="0 0 820 384" role="img" aria-labelledby="plan-titre"><title id="plan-titre">Plan schématique de la ferme : dix parcelles de A1 à E2, chacune plantée d'une culture différente, reliées par une conduite d'eau.</title></svg>
-    <figcaption>Plan schématique des dix parcelles de la ferme.</figcaption>
+    <svg id="plan" viewBox="0 0 985 384" role="img" aria-labelledby="plan-titre"><title id="plan-titre">Plan schématique de la ferme : douze parcelles de A1 à F2, chacune plantée d'une culture différente, reliées par une conduite d'eau.</title></svg>
+    <figcaption>Plan schématique des douze parcelles de la ferme.</figcaption>
   </figure>
 </div></section>
 
@@ -139,10 +139,12 @@ const PARCELLES = [
   ["D2", "Piment",         7, "2 9",  5, "#f2c14e"],
   ["E1", "Gombo",          6, "5 10", 5, "#8fd19e"],
   ["E2", "Chou",           5, "1 14", 10, "#c6e8a0"],
+  ["F1", "Avocatier",      3, "1 22", 13, "#7bbf6a"],
+  ["F2", "Palmier",        4, "2 18", 12, "#5fae6b"],
 ];
 const W = 150, H = 150, ECART = 10, X0 = 15, Y1 = 10, Y2 = 224, TUYAU = 192;
 const svg = document.getElementById("plan");
-el("line", {x1: X0, y1: TUYAU, x2: X0 + 5 * W + 4 * ECART, y2: TUYAU, class: "conduite"}, svg);
+el("line", {x1: X0, y1: TUYAU, x2: X0 + 6 * W + 5 * ECART, y2: TUYAU, class: "conduite"}, svg);
 PARCELLES.forEach(([code, nom, nb, tirets, epais, couleur], i) => {
   const col = Math.floor(i / 2), haut = i % 2 === 0, x = X0 + col * (W + ECART), y = haut ? Y1 : Y2;
   el("line", {x1: x + W / 2, x2: x + W / 2, y1: TUYAU, y2: haut ? y + H : y, class: "raccord"}, svg);

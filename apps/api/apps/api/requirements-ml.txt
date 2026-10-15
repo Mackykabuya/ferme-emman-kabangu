@@ -1,0 +1,3 @@
+# Entraînement des modèles (ml/) : utilisé à la construction de l'image Docker, ou à la main
+-r requirements.txt
+pandas>=2.0

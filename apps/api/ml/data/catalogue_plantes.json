@@ -1,0 +1,395 @@
+[
+  {
+    "nom": "Piment",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "Pili-pili local",
+      "Habanero",
+      "Cayenne"
+    ],
+    "kc": {
+      "germination": 0.6,
+      "vegetative": 0.85,
+      "floraison": 1.05,
+      "fructification": 0.9
+    },
+    "ph_min": 5.8,
+    "ph_max": 6.8,
+    "n_min": 40,
+    "n_max": 80,
+    "p_min": 20,
+    "p_max": 40,
+    "k_min": 120,
+    "k_max": 200,
+    "ec_max_dsm": 1.5,
+    "humidite_sol_min": 55,
+    "humidite_sol_max": 75,
+    "temp_opt_min": 22,
+    "temp_opt_max": 30,
+    "densite_plants_ha": 20000,
+    "debit_plant_lph": 4,
+    "tolerance_hydrique": 2
+  },
+  {
+    "nom": "Tomate",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "Roma",
+      "Money Maker",
+      "Marmande",
+      "Heinz"
+    ],
+    "kc": {
+      "germination": 0.6,
+      "vegetative": 0.9,
+      "floraison": 1.15,
+      "fructification": 0.8
+    },
+    "ph_min": 6.0,
+    "ph_max": 6.8,
+    "n_min": 50,
+    "n_max": 90,
+    "p_min": 25,
+    "p_max": 50,
+    "k_min": 150,
+    "k_max": 250,
+    "ec_max_dsm": 2.5,
+    "humidite_sol_min": 60,
+    "humidite_sol_max": 80,
+    "temp_opt_min": 20,
+    "temp_opt_max": 28,
+    "densite_plants_ha": 25000,
+    "debit_plant_lph": 4,
+    "tolerance_hydrique": 2
+  },
+  {
+    "nom": "Poivron",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "California Wonder",
+      "Yolo Wonder"
+    ],
+    "kc": {
+      "germination": 0.6,
+      "vegetative": 0.85,
+      "floraison": 1.05,
+      "fructification": 0.9
+    },
+    "ph_min": 6.0,
+    "ph_max": 6.8,
+    "n_min": 45,
+    "n_max": 85,
+    "p_min": 25,
+    "p_max": 45,
+    "k_min": 140,
+    "k_max": 220,
+    "ec_max_dsm": 1.5,
+    "humidite_sol_min": 60,
+    "humidite_sol_max": 78,
+    "temp_opt_min": 21,
+    "temp_opt_max": 29,
+    "densite_plants_ha": 30000,
+    "debit_plant_lph": 4,
+    "tolerance_hydrique": 2
+  },
+  {
+    "nom": "Gombo",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "Clemson Spineless",
+      "Locale Kinshasa"
+    ],
+    "kc": {
+      "germination": 0.5,
+      "vegetative": 0.8,
+      "floraison": 1.05,
+      "fructification": 0.85
+    },
+    "ph_min": 6.0,
+    "ph_max": 7.0,
+    "n_min": 35,
+    "n_max": 70,
+    "p_min": 20,
+    "p_max": 40,
+    "k_min": 100,
+    "k_max": 180,
+    "ec_max_dsm": 2.0,
+    "humidite_sol_min": 50,
+    "humidite_sol_max": 70,
+    "temp_opt_min": 24,
+    "temp_opt_max": 33,
+    "densite_plants_ha": 40000,
+    "debit_plant_lph": 3,
+    "tolerance_hydrique": 4
+  },
+  {
+    "nom": "Aubergine",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "Black Beauty",
+      "Longue violette"
+    ],
+    "kc": {
+      "germination": 0.6,
+      "vegetative": 0.9,
+      "floraison": 1.1,
+      "fructification": 0.9
+    },
+    "ph_min": 5.8,
+    "ph_max": 6.8,
+    "n_min": 45,
+    "n_max": 85,
+    "p_min": 25,
+    "p_max": 45,
+    "k_min": 130,
+    "k_max": 220,
+    "ec_max_dsm": 1.8,
+    "humidite_sol_min": 58,
+    "humidite_sol_max": 78,
+    "temp_opt_min": 22,
+    "temp_opt_max": 30,
+    "densite_plants_ha": 20000,
+    "debit_plant_lph": 4,
+    "tolerance_hydrique": 3
+  },
+  {
+    "nom": "Amarante (Loso)",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "Loso vert",
+      "Loso rouge"
+    ],
+    "kc": {
+      "germination": 0.5,
+      "vegetative": 0.8,
+      "floraison": 1.0,
+      "fructification": 0.85
+    },
+    "ph_min": 5.8,
+    "ph_max": 7.0,
+    "n_min": 60,
+    "n_max": 110,
+    "p_min": 20,
+    "p_max": 40,
+    "k_min": 100,
+    "k_max": 180,
+    "ec_max_dsm": 2.0,
+    "humidite_sol_min": 55,
+    "humidite_sol_max": 75,
+    "temp_opt_min": 22,
+    "temp_opt_max": 32,
+    "densite_plants_ha": 500000,
+    "debit_plant_lph": 0.5,
+    "tolerance_hydrique": 3
+  },
+  {
+    "nom": "Chou",
+    "categorie": "Légumes & Maraîchage",
+    "varietes": [
+      "Gloria F1",
+      "Copenhagen Market"
+    ],
+    "kc": {
+      "germination": 0.7,
+      "vegetative": 0.9,
+      "floraison": 1.05,
+      "fructification": 0.95
+    },
+    "ph_min": 6.0,
+    "ph_max": 7.0,
+    "n_min": 60,
+    "n_max": 110,
+    "p_min": 25,
+    "p_max": 45,
+    "k_min": 150,
+    "k_max": 240,
+    "ec_max_dsm": 1.8,
+    "humidite_sol_min": 65,
+    "humidite_sol_max": 82,
+    "temp_opt_min": 16,
+    "temp_opt_max": 25,
+    "densite_plants_ha": 40000,
+    "debit_plant_lph": 4,
+    "tolerance_hydrique": 2
+  },
+  {
+    "nom": "Maïs",
+    "categorie": "Céréales & Tubercules",
+    "varietes": [
+      "Samaru (OPV)",
+      "Hybride SC"
+    ],
+    "kc": {
+      "germination": 0.4,
+      "vegetative": 0.8,
+      "floraison": 1.2,
+      "fructification": 0.6
+    },
+    "ph_min": 5.8,
+    "ph_max": 7.0,
+    "n_min": 50,
+    "n_max": 100,
+    "p_min": 20,
+    "p_max": 40,
+    "k_min": 110,
+    "k_max": 190,
+    "ec_max_dsm": 1.7,
+    "humidite_sol_min": 50,
+    "humidite_sol_max": 70,
+    "temp_opt_min": 20,
+    "temp_opt_max": 32,
+    "densite_plants_ha": 55000,
+    "debit_plant_lph": 4,
+    "tolerance_hydrique": 3
+  },
+  {
+    "nom": "Manioc",
+    "categorie": "Céréales & Tubercules",
+    "varietes": [
+      "Variété améliorée anti-mosaïque",
+      "Locale douce"
+    ],
+    "kc": {
+      "germination": 0.3,
+      "vegetative": 0.7,
+      "floraison": 1.1,
+      "fructification": 0.5
+    },
+    "ph_min": 5.0,
+    "ph_max": 6.5,
+    "n_min": 30,
+    "n_max": 60,
+    "p_min": 10,
+    "p_max": 30,
+    "k_min": 80,
+    "k_max": 150,
+    "ec_max_dsm": 1.5,
+    "humidite_sol_min": 40,
+    "humidite_sol_max": 62,
+    "temp_opt_min": 23,
+    "temp_opt_max": 32,
+    "densite_plants_ha": 10000,
+    "debit_plant_lph": 6,
+    "tolerance_hydrique": 5
+  },
+  {
+    "nom": "Patate douce",
+    "categorie": "Céréales & Tubercules",
+    "varietes": [
+      "Chair orange (OFSP)",
+      "Chair blanche"
+    ],
+    "kc": {
+      "germination": 0.5,
+      "vegetative": 0.75,
+      "floraison": 1.15,
+      "fructification": 0.65
+    },
+    "ph_min": 5.5,
+    "ph_max": 6.5,
+    "n_min": 30,
+    "n_max": 60,
+    "p_min": 15,
+    "p_max": 35,
+    "k_min": 120,
+    "k_max": 200,
+    "ec_max_dsm": 1.5,
+    "humidite_sol_min": 45,
+    "humidite_sol_max": 65,
+    "temp_opt_min": 21,
+    "temp_opt_max": 30,
+    "densite_plants_ha": 40000,
+    "debit_plant_lph": 2,
+    "tolerance_hydrique": 4
+  },
+  {
+    "nom": "Arachide",
+    "categorie": "Céréales & Tubercules",
+    "varietes": [
+      "Virginia",
+      "Spanish"
+    ],
+    "kc": {
+      "germination": 0.4,
+      "vegetative": 0.8,
+      "floraison": 1.15,
+      "fructification": 0.6
+    },
+    "ph_min": 5.8,
+    "ph_max": 6.6,
+    "n_min": 20,
+    "n_max": 45,
+    "p_min": 20,
+    "p_max": 40,
+    "k_min": 80,
+    "k_max": 150,
+    "ec_max_dsm": 3.2,
+    "humidite_sol_min": 45,
+    "humidite_sol_max": 65,
+    "temp_opt_min": 22,
+    "temp_opt_max": 32,
+    "densite_plants_ha": 200000,
+    "debit_plant_lph": 1,
+    "tolerance_hydrique": 4
+  },
+  {
+    "nom": "Papaye",
+    "categorie": "Fruits / Autres",
+    "varietes": [
+      "Solo",
+      "Formosa"
+    ],
+    "kc": {
+      "germination": 0.6,
+      "vegetative": 0.85,
+      "floraison": 1.05,
+      "fructification": 1.0
+    },
+    "ph_min": 5.8,
+    "ph_max": 6.8,
+    "n_min": 50,
+    "n_max": 90,
+    "p_min": 25,
+    "p_max": 45,
+    "k_min": 150,
+    "k_max": 250,
+    "ec_max_dsm": 1.2,
+    "humidite_sol_min": 55,
+    "humidite_sol_max": 75,
+    "temp_opt_min": 24,
+    "temp_opt_max": 33,
+    "densite_plants_ha": 2000,
+    "debit_plant_lph": 12,
+    "tolerance_hydrique": 2
+  },
+  {
+    "nom": "Banane/Plantain",
+    "categorie": "Fruits / Autres",
+    "varietes": [
+      "Plantain French",
+      "Cavendish (dessert)"
+    ],
+    "kc": {
+      "germination": 0.5,
+      "vegetative": 0.9,
+      "floraison": 1.15,
+      "fructification": 1.1
+    },
+    "ph_min": 5.8,
+    "ph_max": 7.0,
+    "n_min": 60,
+    "n_max": 110,
+    "p_min": 25,
+    "p_max": 50,
+    "k_min": 200,
+    "k_max": 350,
+    "ec_max_dsm": 1.0,
+    "humidite_sol_min": 65,
+    "humidite_sol_max": 85,
+    "temp_opt_min": 24,
+    "temp_opt_max": 32,
+    "densite_plants_ha": 1700,
+    "debit_plant_lph": 16,
+    "tolerance_hydrique": 1
+  }
+]

@@ -3,7 +3,7 @@
   const zone = document.querySelector(".fond");
   if (!zone) return;
   let photos = [];
-  try { photos = (await (await fetch("/photos")).json()).photos || []; } catch (e) {}
+  try { photos = (await (await fetch("/photos", {cache: "no-store"})).json()).photos || []; } catch (e) {}
   if (!photos.length) { zone.classList.add("sans-photo"); return; }
   zone.classList.add("avec-photos");
   const calques = [0, 1].map(() => { const d = document.createElement("div"); d.className = "diapo"; zone.appendChild(d); return d; });
@@ -11,8 +11,12 @@
   const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let i = 0, actif = 1, enPause = reduit, minuteur = null;
 
-  function montrer(k) {
+  function montrer(k, essais = 0) {
     const img = new Image();
+    img.onerror = () => {                                   // photo introuvable ou illisible : on passe à la suivante, et on revient au fond vert si aucune ne s'ouvre
+      if (essais + 1 >= photos.length) { zone.classList.remove("avec-photos"); zone.classList.add("sans-photo"); calques.forEach(c => c.classList.remove("on")); return; }
+      i = (k + 1) % photos.length; montrer(i, essais + 1);
+    };
     img.onload = () => {
       const entrant = calques[1 - actif], sortant = calques[actif];
       entrant.style.backgroundImage = `url("${photos[k].url}")`;

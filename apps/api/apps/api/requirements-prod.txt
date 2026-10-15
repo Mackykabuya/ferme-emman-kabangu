@@ -1,0 +1,3 @@
+# Production : API + pilote PostgreSQL
+-r requirements.txt
+psycopg[binary]>=3.1

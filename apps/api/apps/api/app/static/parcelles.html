@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="icon" href="logo.svg" type="image/svg+xml"><link rel="stylesheet" href="marque.css"><script src="auth.js"></script><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferme Emman Kabangu · Parcelles</title>
+<style>
+:root{--fond:#eef2ec;--encre:#17301f;--doux:#5d6f62;--ligne:#d5ddd3;--eau:#1d6fa5;--ok:#2e7d4f;--alerte:#b7791f;--danger:#b3382c}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+header{background:var(--encre);color:#eef6ea;padding:16px 24px}header h1{margin:0;font-size:1.3rem}header p{margin:2px 0 0;color:#a9c4b0}header a{color:#bfe0c9}
+.barre{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:14px 24px;background:#fff;border-bottom:1px solid var(--ligne)}
+.barre div{display:flex;flex-direction:column;font-size:.85rem;color:var(--doux)}.barre input{width:110px}
+input,select{padding:7px 9px;border:1px solid var(--ligne);border-radius:6px;font:inherit;color:var(--encre);background:#fff}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--ligne);background:#fff;color:var(--encre);padding:7px 12px}
+button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:600}button.d{color:var(--danger);border-color:var(--danger)}
+:focus-visible{outline:3px solid #7fb6dc;outline-offset:2px}
+.bilan{padding:12px 24px;color:var(--doux)}.bilan b{color:var(--encre)}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;padding:0 24px 24px}
+.carte{background:#fff;border:1px solid var(--ligne);border-left:6px solid var(--ok);border-radius:10px;padding:14px;text-align:left;cursor:pointer;display:block;width:100%}
+.carte:hover{border-color:var(--eau)}.carte h3{margin:0}.carte small{color:var(--doux)}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;color:#fff;font-size:.85rem;font-weight:600;margin:8px 0 4px}
+.ligne{margin:3px 0;font-size:.93rem}.ouv{color:var(--eau);font-weight:700}
+dialog{border:0;border-radius:12px;padding:22px;max-width:640px;width:calc(100% - 24px);box-shadow:0 10px 40px #0004}
+dialog::backdrop{background:#0006}h2{margin:0 0 4px}h4{margin:14px 0 4px}ul,ol{margin:4px 0;padding-left:22px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}.actions input{width:70px}
+.resume{background:var(--encre);color:#eef6ea;border-radius:8px;padding:12px 14px;margin:12px 0}
+.champ{display:block;margin-top:10px;font-size:.88rem;color:var(--doux)}.champ input,.champ select{width:100%}
+.err{color:var(--danger);margin-top:8px}
+.graph{padding:0 24px 30px}.graph h2{margin:6px 0}.barre2{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.gcarte{background:#fff;border:1px solid var(--ligne);border-radius:10px;padding:12px 14px;margin-top:12px}.gcarte h3{margin:0 0 4px;font-size:1rem}
+.gcarte svg{width:100%;height:auto}.leg{display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem}
+.leg span::before{content:"";display:inline-block;width:14px;height:4px;background:var(--c);margin-right:6px;vertical-align:middle}
+.alertes{margin:12px 24px 0;display:grid;gap:8px}.alerte{background:#fff;border:1px solid var(--ligne);border-left:6px solid var(--alerte);border-radius:8px;padding:10px 14px}
+.alerte.critique{border-left-color:var(--danger);background:#fdf3f1}.alerte.info{border-left-color:var(--doux);background:#f7f9f6;font-size:.9rem}
+.alerte b{display:block}.alerte .tag{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;margin-right:8px;color:var(--alerte)}
+.alerte.critique .tag{color:var(--danger)}.alerte.info .tag{color:var(--doux)}.alerte p{margin:2px 0}.alerte .quoi{color:var(--doux)}
+.rien{margin:12px 24px 0;color:var(--ok);font-weight:600}.panne{color:var(--danger);font-weight:600;font-size:.9rem}
+#simu,#testpanne{flex-basis:100%;flex-direction:row!important;flex-wrap:wrap;gap:8px;align-items:center!important;font-size:.85rem;color:var(--doux)}#testpanne[hidden]{display:none}
+.leg .vanne::before{background:var(--eau);opacity:.3;height:12px}.note{color:var(--doux);font-size:.88rem;margin:4px 0 0}
+.eau{margin:16px 24px 0;background:#fff;border:1px solid var(--ligne);border-radius:10px;padding:14px 18px}.eau h2{margin:0 0 6px;font-size:1.1rem}
+.eau .tuiles{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0}.eau .tuile{flex:1 1 150px;border:1px solid var(--ligne);border-radius:8px;padding:8px 12px}
+.eau .tuile b{display:block;font-size:1.35rem}.eau .tuile span{color:var(--doux);font-size:.85rem}.eau .gain b{color:var(--ok)}.eau .perte b{color:var(--alerte)}
+.eau table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:8px}.eau th,.eau td{text-align:right;padding:4px 8px;border-bottom:1px solid var(--ligne)}.eau th:first-child,.eau td:first-child{text-align:left}
+.eau svg{width:100%;height:auto;max-height:200px}.eau .note{margin:6px 0 0}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script></head><body class="page-parcelles">
+<header><h1><img class="logo" src="logo.svg" alt="">Ferme Emman Kabangu</h1><p>Vue d'ensemble des parcelles · <a href="catalogue.html">Catalogue des plantes</a> · <a href="index.html">Analyser une parcelle libre</a></p></header>
+<div class="barre" role="group" aria-label="Météo du moment">
+  <div>Température de l'air (°C)<input id="t" type="number" value="30"></div>
+  <div>Humidité de l'air (%)<input id="h" type="number" value="55"></div>
+  <div>Pluie prévue 6 h (mm)<input id="pluie" type="number" value="0" step="0.5"></div>
+  <button class="p" id="maj">Actualiser</button>
+  <button id="auto" data-min-role="operateur" title="Ouvre la vanne des parcelles en mode automatique qui ont besoin d'eau">Lancer l'arrosage automatique</button>
+  <button id="reel" data-min-role="operateur" title="Récupère la météo réelle (Open-Meteo)">Météo réelle</button>
+  <button id="ajout" data-min-role="agronome">Ajouter une parcelle</button>
+  <div id="srcmeteo" style="flex-basis:100%;font-size:.85rem;color:var(--doux)"></div>
+  <div id="simu" style="flex-basis:100%;font-size:.85rem;color:var(--doux)"></div>
+  <div id="testpanne" data-min-role="operateur" hidden>Tester les alertes sur la parcelle choisie dans « Évolution d'une parcelle » :
+    <select id="p_type" aria-label="Type de panne"><option value="bloque">Capteur qui ne bouge plus</option><option value="aberrant">Capteur qui donne une valeur impossible</option><option value="vanne">Vanne ouverte sans eau</option></select>
+    <button id="p_ok" type="button">Simuler une panne</button><button id="p_non" type="button">Réparer</button><span id="p_etat" class="panne"></span></div>
+</div>
+<div id="alertes" role="region" aria-label="Alertes" aria-live="polite"></div>
+<div class="bilan" id="bilan" aria-live="polite"></div>
+<div class="grille" id="grille"></div>
+<section class="eau" id="eau" aria-label="Consommation d'eau"><h2>Consommation d'eau</h2>
+  <label>Période <select id="eau_jours"><option value="1">Dernier jour</option><option value="7" selected>7 derniers jours</option><option value="30">30 derniers jours</option></select></label>
+  <div id="eau_corps" aria-live="polite"></div></section>
+<section class="graph" id="graphes"><h2>Évolution d'une parcelle</h2>
+  <div class="barre2"><label>Parcelle <select id="g_parcelle"></select></label>
+  <label><input type="checkbox" id="live"> Actualisation automatique (5 s)</label></div>
+  <div id="graphiques"></div></section>
+<dialog id="fiche"></dialog>
+<dialog id="nouveau"><h2>Nouvelle parcelle</h2>
+  <label class="champ">Nom<input id="n_nom" placeholder="Parcelle F1"></label>
+  <label class="champ">Culture<select id="n_plante"></select></label>
+  <label class="champ">Surface (m²)<input id="n_surface" type="number" value="2000" min="1"></label>
+  <label class="champ">Type de sol<select id="n_sol"><option>Sableux</option><option selected>Limoneux</option><option>Argileux</option></select></label>
+  <label class="champ">Stade<select id="n_stade"><option>Germination</option><option selected>Croissance végétative</option><option>Floraison</option><option>Fructification/Maturation</option></select></label>
+  <div class="err" id="n_err"></div>
+  <div class="actions"><button class="p" id="n_ok">Ajouter</button><button id="n_non">Annuler</button></div></dialog>
+<script>
+const $ = id => document.getElementById(id);
+const COUL = {"Saine":"--ok","Carence en N":"--alerte","Carence en P":"--alerte","Carence en K":"--alerte","Stress thermique":"--danger","Attaque Fongique/Parasitaire":"--danger"};
+const fmt = n => Math.round(n).toLocaleString("fr-FR");
+const air = () => `t=${$("t").value}&h=${$("h").value}&pluie=${$("pluie").value}`;
+const heure = iso => new Date(iso + "Z").toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"});
+let donnees = [], plantes = [], minuteur, alertes = [];
+const GRAV = {critique: "Urgent", attention: "À vérifier", info: "Information"};
+function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+function liste(tag, items) { const l = el(tag); items.forEach(t => l.appendChild(el("li", "", t))); return l; }
+async function api(url, opt) {
+  const r = await fetch(url, opt && {method: opt.m, headers: {"Content-Type": "application/json"}, body: JSON.stringify(opt.b)});
+  if (r.status === 204) return null;
+  const d = await r.json();
+  if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Valeur refusée : vérifiez les champs.");
+  return d;
+}
+function etat(g) {   // un sol « sain » avec des actions en plus (acidité, sel...) mérite d'être signalé
+  return g.etat_sante === "Saine" && g.actions.length > 1 ? {t: "Un point à corriger", c: "--alerte"} : {t: g.etat_sante_libelle, c: COUL[g.etat_sante]};
+}
+function carteAlerte(a, avecParcelle) {
+  const c = el("div", "alerte " + a.gravite), t = el("b"); t.appendChild(el("span", "tag", GRAV[a.gravite]));
+  t.appendChild(document.createTextNode(avecParcelle ? `${a.titre} · ${a.parcelle}` : a.titre)); c.appendChild(t);
+  c.appendChild(el("p", "quoi", a.message)); c.appendChild(el("p", "", "À faire : " + a.conseil)); return c;
+}
+function afficherAlertes() {
+  const z = $("alertes"); z.replaceChildren(); z.className = alertes.length ? "alertes" : "";
+  if (!alertes.length) { z.appendChild(el("div", "rien", "✓ Aucune anomalie détectée : capteurs, vannes et pompe fonctionnent normalement.")); return; }
+  alertes.forEach(a => z.appendChild(carteAlerte(a, true)));
+}
+async function charger() {
+  const photos = await photosPromise;
+  try { alertes = (await api("/alertes")).alertes; } catch (e) { alertes = []; }
+  afficherAlertes();
+  try { donnees = await api("/parcelles/apercu?" + air()); } catch (e) { $("bilan").textContent = "Le serveur ne répond pas. Vérifiez qu'il est lancé."; return; }
+  const surface = donnees.reduce((s, p) => s + p.surface_m2, 0);
+  const soif = donnees.filter(p => p.decision && p.decision.etape_2_irrigation.vanne_ouverte).length;
+  const ouv = donnees.filter(p => p.vanne_ouverte).length;
+  const aTraiter = donnees.filter(p => p.decision && etat(p.decision.etape_1_diagnostic).c !== "--ok").length;
+  const b = $("bilan"); b.replaceChildren();
+  [[donnees.length, " parcelles, "], [(surface / 10000).toFixed(2).replace(".", ","), " ha au total · "], [soif, " ont besoin d'eau · "], [ouv, " vanne(s) ouverte(s) · "], [aTraiter, " sol(s) à soigner"]]
+    .forEach(([n, t]) => { b.appendChild(el("b", "", n)); b.appendChild(document.createTextNode(t)); });
+  const g = $("grille"); g.replaceChildren();
+  donnees.forEach(p => {
+    const d = p.decision, c = el("button", "carte"); c.type = "button"; c.onclick = () => ouvrirFiche(p.id);
+    const ph = photoDe(p.plante, photos), vig = el("div", "vignette" + (ph ? "" : " sans")), cor = el("div", "corps");
+    if (ph) vig.style.backgroundImage = `url("${ph.url}")`;
+    vig.appendChild(el("span", "culture", p.plante)); c.appendChild(vig);
+    c.style.borderLeftColor = d ? `var(${etat(d.etape_1_diagnostic).c})` : "var(--doux)";
+    cor.appendChild(el("h3", "", p.nom)); cor.appendChild(el("small", "", `${fmt(p.surface_m2)} m² · sol ${p.type_sol.toLowerCase()}`));
+    if (d) {
+      const e = etat(d.etape_1_diagnostic), bd = el("span", "badge", e.t); bd.style.background = `var(${e.c})`; cor.appendChild(el("div")).appendChild(bd);
+      const i = d.etape_2_irrigation;
+      cor.appendChild(el("div", "ligne", i.vanne_ouverte ? `À arroser : ${fmt(i.besoin_L_parcelle_jour)} L` : "Pas d'arrosage nécessaire"));
+    }
+    cor.appendChild(el("div", "ligne" + (p.vanne_ouverte ? " ouv" : ""), p.vanne_ouverte ? `Vanne ouverte jusqu'à ${heure(p.vanne_fin)}` : "Vanne fermée"));
+    cor.appendChild(el("div", "ligne", p.mode === "auto" ? "Mode automatique" : "Mode manuel"));
+    alertes.filter(a => a.parcelle_id === p.id && a.gravite !== "info").forEach(a => cor.appendChild(el("div", "ligne panne", "⚠ " + a.titre)));
+    c.appendChild(cor);
+    g.appendChild(c);
+  });
+  const sel = $("g_parcelle"), cur = sel.value;
+  if (sel.options.length !== donnees.length) {
+    sel.replaceChildren(); donnees.forEach(p => { const o = el("option", "", `${p.nom} · ${p.plante}`); o.value = p.id; sel.appendChild(o); });
+    if (cur) sel.value = cur;
+  }
+  graphiques().catch(() => {});
+  majEau();
+  majSimulation();       // après le chargement des parcelles : les pannes en cours s'affichent avec le nom de la parcelle
+}
+async function ouvrirFiche(id) {
+  const p = donnees.find(x => x.id === id), f = $("fiche"); f.replaceChildren();
+  f.appendChild(el("h2", "", p.nom)); f.appendChild(el("small", "", `${p.plante} · ${fmt(p.surface_m2)} m² · ${p.stade.toLowerCase()}`));
+  if (p.decision) {
+    const g = p.decision.etape_1_diagnostic, i = p.decision.etape_2_irrigation;
+    f.appendChild(el("div", "resume", p.decision.resume_agriculteur));
+    f.appendChild(el("h4", "", "Que faire")); f.appendChild(liste("ol", g.actions));
+    if (g.a_surveiller.length) { f.appendChild(el("h4", "", "À surveiller")); f.appendChild(liste("ul", g.a_surveiller)); }
+  }
+  alertes.filter(a => a.parcelle_id === id).forEach(a => f.appendChild(carteAlerte(a, false)));
+  const a = el("div", "actions"), duree = el("input"); duree.type = "number"; duree.min = 1; duree.max = 120; duree.setAttribute("aria-label", "Durée en minutes");
+  const rec = p.decision && p.decision.etape_2_irrigation; duree.value = rec && rec.vanne_ouverte ? Math.min(120, rec.duree_min) : 30;
+  const cmd = async act => { try { await api(`/parcelles/${id}/vanne`, {m: "POST", b: {action: act, duree_min: +duree.value}}); await charger(); ouvrirFiche(id); } catch (e) { err.textContent = e.message; } };
+  const o = el("button", "p", "Ouvrir la vanne"), x = el("button", "", "Fermer la vanne"), err = el("div", "err");
+  o.onclick = () => cmd("ouvrir"); x.onclick = () => cmd("fermer"); const unite = el("span", "", "minutes (120 maximum)"); [o, x, duree, unite].forEach(b => Ferme.reserver(b, "operateur")); a.append(o, duree, unite, x); f.appendChild(a);
+  const m = el("select"); m.setAttribute("aria-label", "Mode"); [["auto", "Automatique : le système ouvre la vanne"], ["manuel", "Manuel : je décide"]].forEach(([v, t]) => { const op = el("option", "", t); op.value = v; m.appendChild(op); });
+  m.value = p.mode; m.disabled = !Ferme.peut("operateur"); m.onchange = async () => { await api(`/parcelles/${id}`, {m: "PUT", b: {mode: m.value}}); charger(); };
+  const bloc = el("div", "actions"); bloc.append(el("span", "", "Mode :"), m); f.append(bloc, err);
+  const h = await api(`/parcelles/${id}/historique`);
+  f.appendChild(el("h4", "", "Derniers arrosages"));
+  f.appendChild(h.length ? liste("ul", h.slice(0, 5).map(e => `${new Date(e.date + "Z").toLocaleString("fr-FR", {dateStyle: "short", timeStyle: "short"})} · ${e.action === "ouvrir" ? `ouverte ${e.minutes} min (${fmt(e.litres)} L), ${e.source}` : "fermée à la main"}`)) : el("p", "", "Aucun arrosage enregistré."));
+  const fin = el("div", "actions"), sup = el("button", "d", "Supprimer la parcelle"), ferm = el("button", "", "Fermer");
+  sup.onclick = async () => { if (confirm(`Supprimer ${p.nom} et son historique ?`)) { await api(`/parcelles/${id}`, {m: "DELETE"}); f.close(); charger(); } };
+  const voir = el("button", "", "Voir l'évolution"); voir.onclick = () => { f.close(); $("g_parcelle").value = id; graphiques(); $("graphes").scrollIntoView({behavior: "smooth"}); };
+  ferm.onclick = () => f.close(); Ferme.reserver(sup, "agronome"); fin.append(ferm, voir, sup); f.appendChild(fin);
+  if (!f.open) f.showModal();
+}
+const NS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs, parent) { const e = document.createElementNS(NS, tag); Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v)); if (parent) parent.appendChild(e); return e; }
+function courbe(titre, aide, series, dates, o) {   // courbe en SVG : bandes idéales, traits de seuil, périodes d'arrosage
+  const W = 640, H = 210, G = 46, D = 12, B = 28, T = 10, n = dates.length, L = W - G - D, pas = L / Math.max(1, n - 1);
+  const vals = series.flatMap(s => s.valeurs).concat((o.bandes || []).flatMap(b => [b[0], b[1]]), (o.traits || []).map(t => t[0]));
+  let lo = Math.min(...vals), hi = Math.max(...vals); const m = (hi - lo) * 0.08 || 1; lo -= m; hi += m;
+  const X = i => G + i * pas, Y = v => T + (hi - v) * (H - T - B) / (hi - lo);
+  const boite = el("div", "gcarte"); boite.appendChild(el("h3", "", titre));
+  const s = svg("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": titre}, boite);
+  (o.bandes || []).forEach(([a, b, col]) => svg("rect", {x: G, y: Y(b), width: L, height: Math.max(1, Y(a) - Y(b)), fill: col, opacity: .55}, s));
+  (o.arrosage || []).forEach((on, i) => on && svg("rect", {x: Math.max(G, X(i) - pas / 2), y: T, width: pas, height: H - T - B, fill: "#1d6fa5", opacity: .15}, s));
+  for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4; svg("line", {x1: G, x2: W - D, y1: Y(v), y2: Y(v), stroke: "#e3e8e1"}, s); svg("text", {x: G - 6, y: Y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#5d6f62"}, s).textContent = Math.round(v); }
+  (o.traits || []).forEach(([v, nom]) => { svg("line", {x1: G, x2: W - D, y1: Y(v), y2: Y(v), stroke: "#17301f", "stroke-dasharray": "5 4"}, s); svg("text", {x: W - D - 2, y: Y(v) - 4, "text-anchor": "end", "font-size": 11, fill: "#17301f"}, s).textContent = nom; });
+  series.forEach(se => svg("polyline", {points: se.valeurs.map((v, i) => `${X(i)},${Y(v)}`).join(" "), fill: "none", stroke: se.couleur, "stroke-width": 2.2}, s));
+  [0, Math.floor((n - 1) / 2), n - 1].forEach((i, k) => svg("text", {x: X(i), y: H - 8, "text-anchor": ["start", "middle", "end"][k], "font-size": 11, fill: "#5d6f62"}, s).textContent = new Date(dates[i] + "Z").toLocaleString("fr-FR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}));
+  const leg = el("div", "leg"); series.forEach(se => { const b = el("span", "", se.nom); b.style.setProperty("--c", se.couleur); leg.appendChild(b); });
+  if ((o.arrosage || []).some(Boolean)) leg.appendChild(el("span", "vanne", "vanne ouverte"));
+  boite.appendChild(leg); boite.appendChild(el("p", "note", aide)); return boite;
+}
+async function graphiques() {
+  const zone = $("graphiques"), id = $("g_parcelle").value;
+  if (!id) return;
+  const p = donnees.find(x => x.id == id), pl = plantes.find(x => x.id === p.plant_id);
+  const h = await api(`/parcelles/${id}/mesures?limit=240`);
+  zone.replaceChildren();
+  if (h.length < 2) { zone.appendChild(el("p", "note", "Pas encore assez de mesures pour tracer une courbe. Lancez le simulateur : chaque pas ajoute une mesure à chaque parcelle.")); return; }
+  const d = h.map(x => x.date), col = k => h.map(x => x[k]), arro = h.map(x => x.vanne_ouverte), moy = (a, b) => (a + b) / 2;
+  const pct = (k, a, b) => col(k).map(v => v / moy(a, b) * 100);
+  zone.append(
+    courbe(`Humidité du sol (%) · ${p.nom}, ${p.plante}`, `Zone verte : humidité idéale pour cette culture. Trait pointillé : en dessous, on arrose. Bandes bleues : vanne ouverte. Heures simulées.`,
+      [{nom: "Humidité du sol", couleur: "#1d6fa5", valeurs: col("humidite_sol_pct")}], d,
+      {bandes: [[pl.humidite_sol_min, pl.humidite_sol_max, "#bfe0c9"]], traits: [[moy(pl.humidite_sol_min, pl.humidite_sol_max), "seuil d'arrosage"]], arrosage: arro}),
+    courbe("Température du sol (°C)", "Zone verte : température confortable pour la culture. Au-dessus, la plante souffre de la chaleur.",
+      [{nom: "Température du sol", couleur: "#b3382c", valeurs: col("temperature_sol_c")}], d,
+      {bandes: [[pl.temp_opt_min, pl.temp_opt_max, "#bfe0c9"]]}),
+    courbe("Nutriments (% de la quantité idéale)", "100 % = quantité idéale. Sous le trait pointillé (65 %), la plante manque de cet élément : il faut un apport d'engrais.",
+      [{nom: "Azote (N)", couleur: "#2e7d4f", valeurs: pct("azote_N_mgkg", pl.n_min, pl.n_max)}, {nom: "Phosphore (P)", couleur: "#b7791f", valeurs: pct("phosphore_P_mgkg", pl.p_min, pl.p_max)},
+       {nom: "Potassium (K)", couleur: "#7b4fa3", valeurs: pct("potassium_K_mgkg", pl.k_min, pl.k_max)}], d,
+      {traits: [[65, "manque en dessous"], [100, "idéal"]]}));
+}
+$("g_parcelle").onchange = () => graphiques();
+$("live").onchange = () => { clearInterval(minuteur); if ($("live").checked) minuteur = setInterval(async () => { try { afficherMeteo(await api("/meteo")); } catch (e) {} charger(); }, 5000); };
+function afficherMeteo(m) {
+  $("t").value = m.temperature_air_c; $("h").value = m.humidite_air_pct; $("pluie").value = m.prevision_pluie_6h_mm;
+  $("srcmeteo").textContent = `Météo : ${m.source}${m.mis_a_jour ? " · " + new Date(m.mis_a_jour).toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"}) : ""} · arrosage automatique autorisé de ${m.plages}`;
+}
+
+async function majEau() {
+  const z = $("eau_corps");
+  let r; try { r = await api("/eau?jours=" + $("eau_jours").value); } catch (e) { return; }
+  z.replaceChildren();
+  const f = r.ferme, litres = n => `${fmt(n)} L`;
+  const t = el("div", "tuiles"), tuile = (v, l, cls) => { const d = el("div", "tuile " + (cls || "")); d.appendChild(el("b", "", v)); d.appendChild(el("span", "", l)); t.appendChild(d); };
+  tuile(litres(f.reels), "eau envoyée aux parcelles");
+  tuile(litres(f.classiques), "avec un arrosage classique");
+  if (r.comparaison_fiable && f.economie_pct !== null) {
+    f.economie >= 0 ? tuile(`${litres(f.economie)} (${f.economie_pct} %)`, "d'eau économisée", "gain") : tuile(`${litres(-f.economie)} de plus`, "que l'arrosage classique", "perte");
+  } else tuile("—", "comparaison disponible après 1 jour complet", "");
+  z.appendChild(t);
+  if (r.comparaison_fiable && f.economie < 0) z.appendChild(el("p", "note", "Le système a arrosé davantage : c'est normal au démarrage, quand des sols secs sont rattrapés. L'économie apparaît ensuite."));
+  if (r.par_jour.length) {
+    const W = 640, H = 170, g = 30, max = Math.max(1, ...r.par_jour.flatMap(j => [j.reels, j.classiques])), n = r.par_jour.length, lw = (W - 50) / n;
+    const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Litres par jour : arrosage réel et arrosage classique");
+    const add = (tag, a, txt) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (txt) e.textContent = txt; svg.appendChild(e); return e; };
+    add("line", {x1: 44, y1: H - g, x2: W, y2: H - g, stroke: "var(--ligne)"});
+    add("text", {x: 40, y: 12, "text-anchor": "end", "font-size": 10, fill: "var(--doux)"}, fmt(max));
+    r.par_jour.forEach((j, i) => {
+      const x = 48 + i * lw, bw = Math.min(26, lw / 2 - 4), h = v => (H - g - 16) * v / max;
+      add("rect", {x: x + lw / 2 - bw - 2, y: H - g - h(j.classiques), width: bw, height: h(j.classiques), fill: "none", stroke: "var(--doux)", "stroke-dasharray": "3 2"}).appendChild(document.createElementNS(NS, "title")).textContent = `${j.date} · classique : ${fmt(j.classiques)} L`;
+      add("rect", {x: x + lw / 2 + 2, y: H - g - h(j.reels), width: bw, height: h(j.reels), fill: "var(--eau)"}).appendChild(document.createElementNS(NS, "title")).textContent = `${j.date} · réel : ${fmt(j.reels)} L`;
+      if (n <= 14 || i % Math.ceil(n / 10) === 0) add("text", {x: x + lw / 2, y: H - 12, "text-anchor": "middle", "font-size": 10, fill: "var(--doux)"}, new Date(j.date + "T12:00:00").toLocaleDateString("fr-FR", {day: "numeric", month: "short"}));
+    });
+    z.appendChild(svg);
+    z.appendChild(el("p", "note", "Bleu : eau réellement envoyée · pointillés : arrosage classique."));
+  }
+  const tb = el("table"), th = el("tr"); ["Parcelle", "Réel", "Classique", "Écart"].forEach(h => th.appendChild(el("th", "", h))); tb.appendChild(th);
+  r.parcelles.forEach(p => { const l = el("tr"); l.appendChild(el("td", "", p.nom)); l.appendChild(el("td", "", litres(p.reels))); l.appendChild(el("td", "", litres(p.classiques)));
+    l.appendChild(el("td", "", !r.comparaison_fiable ? "—" : p.economie >= 0 ? `−${litres(p.economie)}` : `+${litres(-p.economie)}`)); tb.appendChild(l); });
+  z.appendChild(tb); z.appendChild(el("p", "note", r.methode + " Économiser de l'eau n'est un bon résultat que si les plantes restent en bonne santé."));
+}
+$("eau_jours").onchange = majEau;
+async function majSimulation() {
+  try {
+    const s = await api("/simulation"), z = $("simu"); z.replaceChildren();
+    if (!s.disponible) { z.textContent = "Simulation désactivée : les mesures viennent des capteurs."; return; }
+    const hs = s.heure_simulee ? new Date(s.heure_simulee + "Z").toLocaleString("fr-FR", {weekday: "short", hour: "2-digit", minute: "2-digit"}) : "démarrage…";
+    z.appendChild(document.createTextNode(`Simulation des capteurs ${s.active ? "en cours" : "en pause"} · heure simulée : ${hs} · le temps passe ${s.acceleration} fois plus vite `));
+    const b = el("button", "", s.active ? "Mettre en pause" : "Reprendre"); b.type = "button";
+    b.onclick = async () => { await api(`/simulation/${s.active ? "pause" : "reprendre"}`, {m: "POST", b: {}}); majSimulation(); };
+    Ferme.reserver(b, "operateur"); z.appendChild(b);
+    $("testpanne").hidden = !Ferme.peut("operateur");
+    const pn = Object.entries(s.pannes || {}).map(([id, t]) => { const d = donnees.find(x => x.id === +id); return `${d ? d.nom : id} (${t === "bloque" ? "capteur figé" : t === "aberrant" ? "valeur impossible" : "vanne sans eau"})`; });
+    $("p_etat").textContent = pn.length ? "Pannes en cours : " + pn.join(", ") : "";
+  } catch (e) {}
+}
+$("p_ok").onclick = async () => { try { await api("/simulation/panne", {m: "POST", b: {parcelle_id: +$("g_parcelle").value, type: $("p_type").value}}); majSimulation(); } catch (e) { $("p_etat").textContent = e.message; } };
+$("p_non").onclick = async () => { await api(`/simulation/panne/${$("g_parcelle").value}`, {m: "DELETE"}); majSimulation(); charger(); };
+$("reel").onclick = async () => { try { afficherMeteo(await api("/meteo/actualiser", {m: "POST", b: {}})); charger(); } catch (e) { $("srcmeteo").textContent = e.message; } };
+$("maj").onclick = async () => { await api("/meteo", {m: "PUT", b: {temperature_air_c: +$("t").value, humidite_air_pct: +$("h").value, prevision_pluie_6h_mm: +$("pluie").value}}); charger(); };
+$("auto").onclick = async () => { const r = await api("/parcelles/appliquer-auto?" + air(), {m: "POST", b: {}}); await charger();
+  $("bilan").appendChild(document.createTextNode((r.vannes_ouvertes.length ? ` — Vannes ouvertes : ${r.vannes_ouvertes.join(", ")}.` : " — Aucune vanne à ouvrir pour le moment.") + (r.en_attente_de_pompe.length ? ` En attente de la pompe : ${r.en_attente_de_pompe.join(", ")}.` : "") + (r.hors_plage_horaire.length ? ` Hors des heures d'arrosage (${r.plages}), ${r.hors_plage_horaire.length} parcelle(s) attendent.` : ""))); };
+$("ajout").onclick = () => { $("n_err").textContent = ""; $("nouveau").showModal(); };
+$("n_non").onclick = () => $("nouveau").close();
+$("n_ok").onclick = async () => { try {
+  await api("/parcelles", {m: "POST", b: {nom: $("n_nom").value.trim(), plant_id: +$("n_plante").value, surface_m2: +$("n_surface").value, type_sol: $("n_sol").value, stade: $("n_stade").value}});
+  $("nouveau").close(); $("n_nom").value = ""; charger(); } catch (e) { $("n_err").textContent = e.message; } };
+(async () => { try { afficherMeteo(await api("/meteo")); } catch (e) {}
+  try { plantes = await api("/plants"); plantes.forEach(p => { const o = el("option", "", p.nom); o.value = p.id; $("n_plante").appendChild(o); }); } catch (e) {} charger(); majSimulation(); $("live").checked = true; $("live").onchange(); })();
+</script></body></html>
