@@ -2,7 +2,8 @@
 à une table déjà là. Ici on ajoute (une seule fois, sans rien perdre) les colonnes apparues depuis."""
 from sqlalchemy import inspect, text
 
-COLONNES = [("utilisateurs", "email", "VARCHAR(254)"), ("demandes_inscription", "email", "VARCHAR(254)")]
+COLONNES = [("utilisateurs", "email", "VARCHAR(254)"), ("demandes_inscription", "email", "VARCHAR(254)"),
+            ("parcelles", "latitude", "FLOAT"), ("parcelles", "longitude", "FLOAT")]
 INDEX = [("ix_utilisateurs_email_unique", "utilisateurs", "email")]
 
 

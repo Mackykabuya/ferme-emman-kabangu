@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -27,6 +27,8 @@ class Parcelle(Base):
     mode: Mapped[str] = mapped_column(String(10), default="auto")       # auto | manuel
     mesures: Mapped[dict] = mapped_column(JSON)                         # dernières mesures (simulées pour l'instant)
     vanne_fin: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    latitude: Mapped[float | None] = mapped_column(Float, default=None)    # position GPS (carte) ; vide tant qu'elle n'est pas placée
+    longitude: Mapped[float | None] = mapped_column(Float, default=None)
 
     @property
     def vanne_ouverte(self) -> bool:

@@ -1,0 +1,53 @@
+{
+  "version": "v1-20261009-0833",
+  "date": "2026-10-09T08:33:13",
+  "exemples": 6000,
+  "precision_split": 0.9783,
+  "precision_plante_inedite": 0.982,
+  "precision_par_plante_inedite": {
+    "Amarante (Loso)": 0.9892,
+    "Arachide": 0.978,
+    "Aubergine": 0.985,
+    "Banane/Plantain": 0.9788,
+    "Chou": 0.9819,
+    "Gombo": 0.9889,
+    "Manioc": 0.9811,
+    "Maïs": 0.986,
+    "Papaye": 0.9775,
+    "Patate douce": 0.979,
+    "Piment": 0.9808,
+    "Poivron": 0.9803,
+    "Tomate": 0.9788
+  },
+  "plantes_entrainement": [
+    "Amarante (Loso)",
+    "Arachide",
+    "Aubergine",
+    "Banane/Plantain",
+    "Chou",
+    "Gombo",
+    "Manioc",
+    "Maïs",
+    "Papaye",
+    "Patate douce",
+    "Piment",
+    "Poivron",
+    "Tomate"
+  ],
+  "importance_variables": {
+    "k_ratio": 0.1911,
+    "p_ratio": 0.1899,
+    "n_ratio": 0.1894,
+    "humidite_exces": 0.115,
+    "temp_exces": 0.1084,
+    "humidite_ecart": 0.0915,
+    "temp_ecart": 0.0869,
+    "humidite_deficit": 0.0116,
+    "ec_ratio": 0.0059,
+    "ph_ecart": 0.0056,
+    "sol_sableux": 0.0023,
+    "temp_deficit": 0.001,
+    "sol_limoneux": 0.0008,
+    "sol_argileux": 0.0008
+  }
+}

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="icon" href="logo-icone.png" type="image/png"><link rel="apple-touch-icon" href="logo-icone.png"><link rel="stylesheet" href="marque.css"><script src="langues-dict.js"></script><script src="langues.js"></script><script src="auth.js"></script><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferme Emman Kabangu · Carte</title>
+<link rel="stylesheet" href="leaflet/leaflet.css">
+<style>
+:root{--fond:#eef2ec;--encre:#17301f;--doux:#5d6f62;--ligne:#d5ddd3;--eau:#1d6fa5;--ok:#2e7d4f;--alerte:#b7791f;--danger:#b3382c}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+header{background:var(--encre);color:#eef6ea;padding:16px 24px}header h1{margin:0;font-size:1.3rem}header p{margin:2px 0 0;color:#a9c4b0}header a{color:#bfe0c9}
+button,select{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--ligne);background:#fff;color:var(--encre);padding:7px 12px}
+button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:600}button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid #7fb6dc;outline-offset:2px}
+.mise{display:grid;grid-template-columns:1fr 300px;gap:14px;padding:14px 24px 24px}
+#carte{height:70vh;min-height:380px;border-radius:12px;border:1px solid var(--ligne);z-index:0}
+.cote{background:#fff;border:1px solid var(--ligne);border-radius:12px;padding:14px;align-self:start}
+.cote h2{margin:0 0 6px;font-size:1.05rem}.cote p{margin:6px 0;font-size:.9rem;color:var(--doux)}
+.cote ul{list-style:none;margin:6px 0;padding:0}.cote li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--ligne);font-size:.93rem}
+.cote li small{color:var(--doux)}.cote .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px #0006;background:var(--ok)}
+.pin.ouv{box-shadow:0 0 0 4px #1d6fa588,0 2px 6px #0006}.pin.sel{outline:3px solid #fff;outline-offset:2px}
+.etiq{background:#17301f;color:#fff;border:0;font-weight:600;padding:2px 8px;border-radius:6px}
+.etiq::before{display:none}.msg{min-height:1.4em;font-size:.88rem;color:var(--doux)}.msg.err{color:var(--danger)}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:.85rem;margin-top:8px;color:var(--doux)}.leg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+@media(max-width:800px){.mise{grid-template-columns:1fr;padding:10px 12px 20px}#carte{height:55vh}}
+</style></head><body>
+<header><h1><img class="logo" src="logo.png" alt="">Ferme Emman Kabangu</h1><p>Carte des parcelles · <a href="parcelles.html">Retour aux parcelles</a></p></header>
+<div class="mise">
+  <div id="carte" role="application" aria-label="Carte des parcelles"></div>
+  <aside class="cote">
+    <h2>Parcelles</h2>
+    <div class="msg" id="msg" aria-live="polite"></div>
+    <div id="aplacer"></div>
+    <div id="placees"></div>
+    <div class="leg"><span><i style="background:var(--ok)"></i>Sol sain</span><span><i style="background:var(--alerte)"></i>À corriger</span><span><i style="background:var(--danger)"></i>Urgent</span><span><i style="background:var(--eau)"></i>Vanne ouverte</span></div>
+  </aside>
+</div>
+<script src="leaflet/leaflet.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const COUL = {"Saine":"#2e7d4f","Carence en N":"#b7791f","Carence en P":"#b7791f","Carence en K":"#b7791f","Stress thermique":"#b3382c","Attaque Fongique/Parasitaire":"#b3382c"};
+const peutPlacer = () => Ferme.peut("agronome");
+let carte, marqueurs = {}, donnees = [], choisie = null;
+
+function message(t, err) { const m = $("msg"); m.textContent = t || ""; m.className = "msg" + (err ? " err" : ""); }
+async function api(url, opt) {
+  const r = await fetch(url, opt && {method: opt.m, headers: {"Content-Type": "application/json"}, body: JSON.stringify(opt.b)});
+  if (!r.ok) { let d = ""; try { const j = await r.json(); d = typeof j.detail === "string" ? j.detail : ""; } catch (e) {} throw new Error(d || ("Erreur " + r.status)); }
+  return r.status === 204 ? null : r.json();
+}
+function couleur(p) {
+  const d = p.decision && p.decision.etape_1_diagnostic; if (!d) return "#5d6f62";
+  return d.etat_sante === "Saine" && d.actions.length > 1 ? "#b7791f" : (COUL[d.etat_sante] || "#5d6f62");
+}
+function icone(p) {
+  return L.divIcon({className: "", iconSize: [30, 30], iconAnchor: [4, 30], popupAnchor: [10, -30],
+    html: `<div class="pin${p.vanne_ouverte ? " ouv" : ""}${choisie === p.id ? " sel" : ""}" style="background:${couleur(p)}"></div>`});
+}
+function popup(p) {
+  const d = document.createElement("div"), t = document.createElement("b"); t.textContent = p.nom; d.append(t);
+  const l = (x) => { const e = document.createElement("div"); e.textContent = x; d.append(e); };
+  l(`${p.plante} · ${Math.round(p.surface_m2).toLocaleString("fr-FR")} m²`);
+  if (p.decision) l(p.decision.etape_1_diagnostic.etat_sante_libelle);
+  l(p.vanne_ouverte ? "Vanne ouverte" : "Vanne fermée");
+  const a = document.createElement("a"); a.href = "parcelles.html"; a.textContent = "Ouvrir les parcelles"; d.append(a);
+  return d;
+}
+async function enregistrer(p, lat, lon) {
+  try {
+    await api(`/parcelles/${p.id}`, {m: "PUT", b: {latitude: lat, longitude: lon}});
+    message(lat === null ? `${p.nom} retirée de la carte.` : `${p.nom} placée (${lat.toFixed(5)}, ${lon.toFixed(5)}).`);
+    choisie = null; await charger(false);
+  } catch (e) { message(e.message, true); await charger(false); }
+}
+function ligne(p, placee) {
+  const li = document.createElement("li"), n = document.createElement("span"), s = document.createElement("small");
+  n.textContent = p.nom; s.textContent = " " + p.plante; n.append(s); li.append(n);
+  if (placee) {
+    const v = document.createElement("button"); v.type = "button"; v.textContent = "Voir";
+    v.onclick = () => { carte.setView([p.latitude, p.longitude], Math.max(carte.getZoom(), 17)); marqueurs[p.id].openPopup(); };
+    li.append(v);
+  } else if (peutPlacer()) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = choisie === p.id ? "Annuler" : "Placer";
+    b.onclick = () => { choisie = choisie === p.id ? null : p.id; message(choisie ? `Cliquez sur la carte pour placer ${p.nom}, ou utilisez « Ma position ».` : ""); afficherListes(); };
+    li.append(b);
+  }
+  return li;
+}
+function afficherListes() {
+  const a = $("aplacer"), pl = $("placees"); a.replaceChildren(); pl.replaceChildren();
+  const sans = donnees.filter(p => p.latitude === null), avec = donnees.filter(p => p.latitude !== null);
+  if (sans.length) {
+    const h = document.createElement("p"); h.textContent = peutPlacer() ? `${sans.length} parcelle(s) pas encore sur la carte :` : `${sans.length} parcelle(s) pas encore placée(s) par un agronome.`; a.append(h);
+    const u = document.createElement("ul"); sans.forEach(p => u.append(ligne(p, false))); a.append(u);
+    if (choisie && navigator.geolocation) {
+      const b = document.createElement("button"); b.type = "button"; b.className = "p"; b.textContent = "📍 Ma position"; b.title = "Place la parcelle choisie là où vous êtes (GPS du téléphone)";
+      b.onclick = () => { const p = donnees.find(x => x.id === choisie); b.disabled = true; message("Recherche de votre position…");
+        navigator.geolocation.getCurrentPosition(g => enregistrer(p, g.coords.latitude, g.coords.longitude), () => { b.disabled = false; message("Position indisponible : autorisez la localisation ou cliquez sur la carte.", true); }, {enableHighAccuracy: true, timeout: 20000}); };
+      a.append(b);
+    }
+  }
+  if (avec.length) { const h = document.createElement("p"); h.textContent = "Sur la carte :"; pl.append(h); const u = document.createElement("ul"); avec.forEach(p => u.append(ligne(p, true))); pl.append(u);
+    if (peutPlacer()) { const n = document.createElement("p"); n.textContent = "Pour déplacer une parcelle, faites glisser son repère."; pl.append(n); } }
+}
+function dessiner() {
+  Object.values(marqueurs).forEach(m => m.remove()); marqueurs = {};
+  const pts = [];
+  donnees.filter(p => p.latitude !== null).forEach(p => {
+    const m = L.marker([p.latitude, p.longitude], {icon: icone(p), draggable: peutPlacer(), title: p.nom}).addTo(carte);
+    m.bindTooltip(p.nom, {permanent: true, direction: "right", offset: [14, -14], className: "etiq"}); m.bindPopup(popup(p));
+    m.on("dragend", () => { const c = m.getLatLng(); enregistrer(p, c.lat, c.lng); });
+    marqueurs[p.id] = m; pts.push([p.latitude, p.longitude]);
+  });
+  return pts;
+}
+async function charger(ajuster = true) {
+  try { donnees = await api("/parcelles/apercu"); } catch (e) { message("Le serveur ne répond pas.", true); return; }
+  const pts = dessiner(); afficherListes();
+  if (ajuster && pts.length) carte.fitBounds(pts, {padding: [50, 50], maxZoom: 18});
+}
+async function demarrer() {
+  let centre = [-4.32, 15.31];
+  try { const m = await api("/meteo"); if (m.position) centre = [m.position.latitude, m.position.longitude]; } catch (e) {}
+  carte = L.map("carte").setView(centre, 15);
+  const plan = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 19, attribution: "© OpenStreetMap"});
+  const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {maxZoom: 19, attribution: "Imagery © Esri"});
+  sat.addTo(carte); L.control.layers({"Satellite": sat, "Plan": plan}).addTo(carte);
+  carte.on("click", e => { if (!choisie) return; const p = donnees.find(x => x.id === choisie); if (p) enregistrer(p, e.latlng.lat, e.latlng.lng); });
+  await charger(true);
+  setInterval(() => { if (!document.querySelector('.leaflet-popup') && !choisie) charger(false); }, 15000);
+}
+window.addEventListener("load", () => { if (typeof L === "undefined") { message("La carte n'a pas pu se charger (connexion Internet requise).", true); return; } demarrer(); });
+</script></body></html>

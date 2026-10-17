@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,14 @@ class ParcelleIn(BaseModel):
     plant_id: int
     stade: Stade = "Croissance végétative"
     mode: Literal["auto", "manuel"] = "auto"
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
+
+    @model_validator(mode="after")
+    def _gps_complet(self):
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("La position GPS demande la latitude et la longitude ensemble")
+        return self
 
 
 class ParcelleMaj(BaseModel):
@@ -40,6 +48,8 @@ class ParcelleMaj(BaseModel):
     stade: Optional[Stade] = None
     mode: Optional[Literal["auto", "manuel"]] = None
     mesures: Optional[dict[str, float]] = None
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)      # null = retirer la position de la carte
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
     horodatage: Optional[datetime] = None       # heure de la mesure (le simulateur envoie son horloge simulée)
 
 
@@ -73,6 +83,7 @@ def _plante(db: Session, plant_id: int) -> Plant:
 def vue(p: Parcelle, plante: str) -> dict:
     return {"id": p.id, "nom": p.nom, "surface_m2": p.surface_m2, "type_sol": p.type_sol, "plant_id": p.plant_id,
             "plante": plante, "stade": p.stade, "mode": p.mode, "mesures": p.mesures,
+            "latitude": p.latitude, "longitude": p.longitude,
             "vanne_ouverte": p.vanne_ouverte, "vanne_fin": p.vanne_fin.isoformat() if p.vanne_ouverte else None}
 
 
@@ -220,13 +231,21 @@ def detail(pid: int, db: Session = Depends(get_db)):
 def modifier(pid: int, req: ParcelleMaj, db: Session = Depends(get_db), u=Depends(exiger("operateur"))):
     p = _get(db, pid)
     ch = req.model_dump(exclude_unset=True)
-    if set(ch) & {"nom", "surface_m2", "type_sol", "plant_id", "stade"} and not a_le_role(u, "agronome"):
-        raise HTTPException(403, "Droits insuffisants : changer la culture, le sol, le stade ou la surface demande le rôle "
+    if set(ch) & {"nom", "surface_m2", "type_sol", "plant_id", "stade", "latitude", "longitude"} and not a_le_role(u, "agronome"):
+        raise HTTPException(403, "Droits insuffisants : changer la culture, le sol, le stade, la surface ou la position demande le rôle "
                                  "« agronome » (un opérateur peut changer le mode et envoyer des mesures).")
     if "plant_id" in ch:
         _plante(db, ch["plant_id"])
     if "nom" in ch and db.scalar(select(Parcelle.id).where(Parcelle.nom == ch["nom"], Parcelle.id != pid)):
         raise HTTPException(409, "Ce nom est déjà utilisé")
+    if "latitude" in ch or "longitude" in ch:
+        lat, lon = ch.get("latitude", p.latitude), ch.get("longitude", p.longitude)
+        if (lat is None) != (lon is None):
+            if "latitude" in ch and "longitude" in ch:
+                lat = lon = None
+            else:
+                raise HTTPException(422, "La position GPS demande la latitude et la longitude ensemble")
+        ch["latitude"], ch["longitude"] = lat, lon
     quand = ch.pop("horodatage", None)
     if "mesures" in ch:
         ch["mesures"] = {**p.mesures, **ch["mesures"]}
