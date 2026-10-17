@@ -180,7 +180,7 @@ def test_page_daccueil_publique_et_configurable(ferme):
     assert r.status_code == 200 and "text/html" in r.headers["content-type"]
     assert "Ferme Emman Kabangu" in r.text and "Se connecter" in r.text
     assert "/tableau-de-bord/login.html" in r.text
-    for page in ("logo.svg", "site.json", "marque.css"):                # ressources publiques de l'identité visuelle
+    for page in ("logo.png", "logo-icone.png", "site.json", "marque.css"):                # ressources publiques de l'identité visuelle
         assert c.get(f"/tableau-de-bord/{page}").status_code == 200, page
     assert set(c.get("/tableau-de-bord/site.json").json()) >= {"demo", "lieu", "contact"}
     assert c.get("/parcelles").status_code == 401                           # la page publique n'ouvre l'accès à aucune donnée
