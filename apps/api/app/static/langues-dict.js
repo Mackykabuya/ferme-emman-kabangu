@@ -1677,4 +1677,61 @@ window.FERME_DICT = {
 "Mapa ekómi te (esengeli na Internet).",
 "Ramani haikuweza kupakia (inahitaji Internet)."
 ]
+,
+"Alertes par e-mail": [
+"E-mail alerts",
+"Bilobela na e-mail",
+"Arifa kwa barua pepe"
+],
+"Capteur en panne, vanne qui n'arrose pas, pompe trop faible : un e-mail est envoyé (une seule fois par problème, avec un rappel toutes les 12 h s'il dure). Réservé aux rôles agronome et administrateur, et à une adresse e-mail enregistrée.": [
+"Faulty sensor, valve not watering, pump too weak: an e-mail is sent (once per problem, with a reminder every 12 h if it lasts). Reserved for agronomist and administrator roles with a registered e-mail address.",
+"Capteur ebebi, vanne esopi mai te, pompe ezali na makasi te : e-mail ezali kotindama (mbala moko mpo na problème moko, na kokundola nsima ya ngonga 12 soki ezali kokoba). Ezali mpo na agronome na administrateur kaka, na adresse e-mail ekomisami.",
+"Kihisi kibovu, valvu haimwagilii, pampu dhaifu: barua pepe hutumwa (mara moja kwa tatizo, na ukumbusho kila saa 12 likiendelea). Ni kwa wataalamu wa kilimo na wasimamizi wenye barua pepe iliyosajiliwa."
+],
+"Recevoir les alertes par e-mail": [
+"Receive alerts by e-mail",
+"Kozwa bilobela na e-mail",
+"Pokea arifa kwa barua pepe"
+],
+"Envoyer un e-mail de test": [
+"Send a test e-mail",
+"Tinda e-mail ya komeka",
+"Tuma barua pepe ya majaribio"
+],
+"Alertes par e-mail activées.": [
+"E-mail alerts turned on.",
+"Bilobela na e-mail ebandi.",
+"Arifa kwa barua pepe zimewashwa."
+],
+"Alertes par e-mail coupées.": [
+"E-mail alerts turned off.",
+"Bilobela na e-mail etumbami.",
+"Arifa kwa barua pepe zimezimwa."
+]
+,
+"📍 Me localiser": [
+"📍 Locate me",
+"📍 Komilukela",
+"📍 Nionyeshe nilipo"
+],
+"Affiche votre position sur la carte (GPS)": [
+"Shows your position on the map (GPS)",
+"Emonisi esika ozali na mapa (GPS)",
+"Inaonyesha mahali ulipo kwenye ramani (GPS)"
+],
+"Vous êtes ici": [
+"You are here",
+"Ozali awa",
+"Uko hapa"
+],
+"Votre position n'est pas disponible sur une adresse http:// : ouvrez la carte depuis l'ordinateur du serveur (localhost) ou avec une adresse https://.": [
+"Your location is not available on an http:// address: open the map from the server computer (localhost) or with an https:// address.",
+"Esika ozali emonani te na adresse http:// : fungola mapa na ordinateur ya serveur (localhost) to na adresse https://.",
+"Mahali ulipo hapapatikani kwenye anwani ya http:// : fungua ramani kwenye kompyuta ya seva (localhost) au kwa anwani ya https://."
+],
+"Position indisponible : autorisez la localisation dans le navigateur.": [
+"Location unavailable: allow location access in the browser.",
+"Esika emonani te : pesa ndingisa ya localisation na navigateur.",
+"Mahali hapapatikani: ruhusu eneo kwenye kivinjari."
+]
 };

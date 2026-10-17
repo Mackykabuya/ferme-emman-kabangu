@@ -28,6 +28,7 @@ button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:60
   <aside class="cote">
     <h2>Parcelles</h2>
     <div class="msg" id="msg" aria-live="polite"></div>
+    <div class="actions"><button type="button" id="moi" title="Affiche votre position sur la carte (GPS)">📍 Me localiser</button></div>
     <div id="aplacer"></div>
     <div id="placees"></div>
     <div class="leg"><span><i style="background:var(--ok)"></i>Sol sain</span><span><i style="background:var(--alerte)"></i>À corriger</span><span><i style="background:var(--danger)"></i>Urgent</span><span><i style="background:var(--eau)"></i>Vanne ouverte</span></div>
@@ -38,6 +39,7 @@ button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:60
 const $ = id => document.getElementById(id);
 const COUL = {"Saine":"#2e7d4f","Carence en N":"#b7791f","Carence en P":"#b7791f","Carence en K":"#b7791f","Stress thermique":"#b3382c","Attaque Fongique/Parasitaire":"#b3382c"};
 const peutPlacer = () => Ferme.peut("agronome");
+let moiPoint = null, moiCercle = null;
 let carte, marqueurs = {}, donnees = [], choisie = null;
 
 function message(t, err) { const m = $("msg"); m.textContent = t || ""; m.className = "msg" + (err ? " err" : ""); }
@@ -116,6 +118,22 @@ async function charger(ajuster = true) {
   const pts = dessiner(); afficherListes();
   if (ajuster && pts.length) carte.fitBounds(pts, {padding: [50, 50], maxZoom: 18});
 }
+function localiser() {
+  if (!navigator.geolocation || !window.isSecureContext) {
+    message("Votre position n'est pas disponible sur une adresse http:// : ouvrez la carte depuis l'ordinateur du serveur (localhost) ou avec une adresse https://.", true); return;
+  }
+  const b = $("moi"); b.disabled = true; message("Recherche de votre position…");
+  navigator.geolocation.getCurrentPosition(g => {
+    b.disabled = false; message("");
+    const ll = [g.coords.latitude, g.coords.longitude];
+    if (moiPoint) { moiPoint.setLatLng(ll); moiCercle.setLatLng(ll).setRadius(g.coords.accuracy); }
+    else {
+      moiCercle = L.circle(ll, {radius: g.coords.accuracy, color: "#1d6fa5", weight: 1, fillOpacity: .12, interactive: false}).addTo(carte);
+      moiPoint = L.circleMarker(ll, {radius: 8, color: "#fff", weight: 3, fillColor: "#1d6fa5", fillOpacity: 1}).addTo(carte).bindTooltip("Vous êtes ici");
+    }
+    carte.setView(ll, Math.max(carte.getZoom(), 17));
+  }, () => { b.disabled = false; message("Position indisponible : autorisez la localisation dans le navigateur.", true); }, {enableHighAccuracy: true, timeout: 20000});
+}
 async function demarrer() {
   let centre = [-4.32, 15.31];
   try { const m = await api("/meteo"); if (m.position) centre = [m.position.latitude, m.position.longitude]; } catch (e) {}
@@ -124,6 +142,7 @@ async function demarrer() {
   const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {maxZoom: 19, attribution: "Imagery © Esri"});
   sat.addTo(carte); L.control.layers({"Satellite": sat, "Plan": plan}).addTo(carte);
   carte.on("click", e => { if (!choisie) return; const p = donnees.find(x => x.id === choisie); if (p) enregistrer(p, e.latlng.lat, e.latlng.lng); });
+  $("moi").onclick = localiser;
   await charger(true);
   setInterval(() => { if (!document.querySelector('.leaflet-popup') && !choisie) charger(false); }, 15000);
 }

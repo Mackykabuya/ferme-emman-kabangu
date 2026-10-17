@@ -45,7 +45,7 @@ def _mail_pris(db: Session, mail: str, sauf_id: int | None = None) -> bool:
 
 def _vue(u: Utilisateur) -> dict:
     return {"id": u.id, "identifiant": u.identifiant, "nom": u.nom, "role": u.role, "role_libelle": LIBELLES[u.role],
-            "email": u.email, "actif": u.actif}
+            "email": u.email, "actif": u.actif, "notif_alertes": bool(u.notif_alertes)}
 
 
 class Connexion(BaseModel):
@@ -119,6 +119,18 @@ def changer_email(req: ChangementEmail, u: Utilisateur = Depends(utilisateur_cou
     if _mail_pris(db, mail, u.id):
         raise HTTPException(409, "Cette adresse e-mail est déjà utilisée.")
     u.email = mail
+    db.commit()
+    return _vue(u)
+
+
+class ChoixNotif(BaseModel):
+    actif: bool
+
+
+@router.put("/moi/notifications")
+def changer_notifications(req: ChoixNotif, u: Utilisateur = Depends(utilisateur_courant), db: Session = Depends(get_db)):
+    """Active ou coupe la réception des alertes par e-mail pour son propre compte."""
+    u.notif_alertes = req.actif
     db.commit()
     return _vue(u)
 

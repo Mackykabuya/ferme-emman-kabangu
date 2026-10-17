@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import Base, SessionLocal, engine
-from . import ajouts, migration, simulation, sauvegarde
+from . import ajouts, migration, notifications, simulation, sauvegarde
 from sqlalchemy import text
 from .auth import creer_admin_initial, email_admin_depuis_env, exiger
 from .routers import admin, alertes, auth as auth_api, decision, eau, diagnostic, irrigation, meteo, parcelles, plants
@@ -89,8 +89,24 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(3600)
 
     tache_sauv = asyncio.create_task(boucle_sauvegarde()) if sauvegarde.HEURES > 0 else None
+    def _verifier_alertes():
+        with SessionLocal() as db:
+            return notifications.traiter(db)
+
+    async def boucle_notifications():
+        await asyncio.sleep(90)
+        while True:
+            try:
+                r = await asyncio.to_thread(_verifier_alertes)
+                if r["envoyes"]:
+                    print(f"Alertes par e-mail : {r['a_annoncer']} nouvelle(s), {r['envoyes']} message(s) envoyé(s)")
+            except Exception as e:
+                print("Notification des alertes en échec :", e)
+            await asyncio.sleep(max(30, notifications.MINUTES * 60))
+
+    tache_notif = asyncio.create_task(boucle_notifications()) if notifications.MINUTES > 0 else None
     yield
-    for t in (tache, tache_meteo, tache_sim, tache_sauv):
+    for t in (tache, tache_meteo, tache_sim, tache_sauv, tache_notif):
         if t:
             t.cancel()
 
@@ -108,7 +124,7 @@ async def en_tetes_securite(request: Request, call_next):
     rep.headers.setdefault("X-Content-Type-Options", "nosniff")
     rep.headers.setdefault("X-Frame-Options", "DENY")
     rep.headers.setdefault("Referrer-Policy", "same-origin")
-    rep.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    rep.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)")
     if os.getenv("FERME_HTTPS") == "1":
         rep.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
     chemin = request.url.path

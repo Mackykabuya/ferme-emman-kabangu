@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -19,6 +19,7 @@ class Utilisateur(Base):
     mdp_hash: Mapped[str] = mapped_column(String(300))
     email: Mapped[str | None] = mapped_column(String(254), unique=True, nullable=True)        # en minuscules
     actif: Mapped[bool] = mapped_column(default=True)
+    notif_alertes: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())     # reçoit les alertes par e-mail
     cree_le: Mapped[datetime] = mapped_column(DateTime, default=_maintenant)
 
 
@@ -49,3 +50,10 @@ class ReinitialisationMdp(Base):
     utilisateur_id: Mapped[int] = mapped_column(ForeignKey("utilisateurs.id"), index=True)
     expire_le: Mapped[datetime] = mapped_column(DateTime)
     cree_le: Mapped[datetime] = mapped_column(DateTime, default=_maintenant)
+
+
+class AlerteNotifiee(Base):
+    """Alertes déjà annoncées par e-mail : évite de renvoyer le même message à chaque vérification."""
+    __tablename__ = "alertes_notifiees"
+    cle: Mapped[str] = mapped_column(String(80), primary_key=True)           # « code:parcelle_id »
+    notifiee_le: Mapped[datetime] = mapped_column(DateTime, default=_maintenant)

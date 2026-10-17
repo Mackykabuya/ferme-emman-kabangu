@@ -29,3 +29,8 @@ def test_parcelles_sans_position_par_defaut(ferme):
 def test_pages_carte_et_langues_servies(ferme, page):
     r = ferme.get(f"/tableau-de-bord/{page}")
     assert r.status_code == 200 and len(r.text) > 500
+
+
+def test_en_tete_autorise_la_geolocalisation_de_la_carte(ferme):
+    pp = ferme.get("/tableau-de-bord/carte.html").headers["Permissions-Policy"]
+    assert "geolocation=(self)" in pp and "camera=()" in pp

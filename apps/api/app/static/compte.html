@@ -33,6 +33,12 @@ table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{text-align:left
     <button>Enregistrer</button>
   </form><div id="e_msg" class="msg" role="status"></div></section>
 
+<section aria-labelledby="t7"><h2 id="t7">Alertes par e-mail</h2>
+  <p class="note">Capteur en panne, vanne qui n'arrose pas, pompe trop faible : un e-mail est envoyé (une seule fois par problème, avec un rappel toutes les 12 h s'il dure). Réservé aux rôles agronome et administrateur, et à une adresse e-mail enregistrée.</p>
+  <label><input type="checkbox" id="notif"> Recevoir les alertes par e-mail</label>
+  <div id="notif_msg" class="msg" role="status"></div>
+  <div data-min-role="admin"><button id="test_mail" type="button">Envoyer un e-mail de test</button></div></section>
+
 <section aria-labelledby="t3"><h2 id="t3">Ce que chaque rôle peut faire</h2>
   <table class="droits"><tbody>
     <tr><td>Lecteur</td><td>Voit tout (parcelles, graphiques, alertes, eau) mais ne modifie rien.</td></tr>
@@ -85,6 +91,15 @@ $("mdp").onsubmit = async e => {
 function afficherMail() { $("mon_mail").textContent = Ferme.utilisateur().email || "aucune (ajoutez-la ci-dessous)"; }
 afficherMail();
 fetch("/auth/moi").then(r => r.json()).then(m => { Ferme.utilisateur().email = m.email; afficherMail(); }).catch(() => {});
+fetch("/auth/moi").then(r => r.json()).then(m => { $("notif").checked = m.notif_alertes; }).catch(() => {});
+$("notif").onchange = async () => {
+  try { const m = await api("/auth/moi/notifications", "PUT", {actif: $("notif").checked}); dire("notif_msg", m.notif_alertes ? "Alertes par e-mail activées." : "Alertes par e-mail coupées.", true); }
+  catch (err) { $("notif").checked = !$("notif").checked; dire("notif_msg", err.message, false); }
+};
+$("test_mail").onclick = async () => {
+  try { const r = await api("/admin/test-courriel", "POST"); dire("notif_msg", "E-mail de test envoyé à " + r.envoye_a + ".", true); }
+  catch (err) { dire("notif_msg", err.message, false); }
+};
 $("mail").onsubmit = async e => {
   e.preventDefault();
   try { const m = await api("/auth/moi/email", "PUT", {email: $("e_mail").value, mot_de_passe: $("e_mdp").value}); Ferme.utilisateur().email = m.email; $("mail").reset(); afficherMail(); dire("e_msg", "Adresse e-mail enregistrée.", true); }

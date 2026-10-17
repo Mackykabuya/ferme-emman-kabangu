@@ -3,7 +3,8 @@
 from sqlalchemy import inspect, text
 
 COLONNES = [("utilisateurs", "email", "VARCHAR(254)"), ("demandes_inscription", "email", "VARCHAR(254)"),
-            ("parcelles", "latitude", "FLOAT"), ("parcelles", "longitude", "FLOAT")]
+            ("parcelles", "latitude", "FLOAT"), ("parcelles", "longitude", "FLOAT"),
+            ("utilisateurs", "notif_alertes", "BOOLEAN DEFAULT TRUE")]
 INDEX = [("ix_utilisateurs_email_unique", "utilisateurs", "email")]
 
 

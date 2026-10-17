@@ -35,6 +35,9 @@ services:
       SMTP_MOT_DE_PASSE: ${SMTP_MOT_DE_PASSE:-}
       SMTP_DE: ${SMTP_DE:-}
       SMTP_SSL: ${SMTP_SSL:-}
+      NOTIF_MINUTES: ${NOTIF_MINUTES:-5}
+      NOTIF_RAPPEL_H: ${NOTIF_RAPPEL_H:-12}
+      NOTIF_ROLE_MIN: ${NOTIF_ROLE_MIN:-agronome}
     volumes:
       - sauvegardes:/data/sauvegardes
       - ./apps/api/app/static/photos:/app/apps/api/app/static/photos

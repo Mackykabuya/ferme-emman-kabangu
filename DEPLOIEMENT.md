@@ -41,6 +41,9 @@ Vos photos (`apps/api/app/static/photos`) et `site.json` sont montés dans le co
 - Docker : `docker compose exec api python -m app.sauvegarde restaurer <fichier>` puis `docker compose restart api`.
 - Copiez de temps en temps les sauvegardes **hors du serveur** (clé USB, autre machine).
 
+## Alertes par e-mail
+Avec SMTP réglé (voir plus haut), les comptes **agronome et administrateur** qui ont une adresse e-mail reçoivent un message quand une alerte apparaît (capteur bloqué, valeur impossible, vanne sans effet, pompe trop faible). Une alerte déjà annoncée n'est pas renvoyée, sauf rappel toutes les `NOTIF_RAPPEL_H` heures. Chacun peut couper ses alertes dans *Mon compte*, et l'administrateur y trouve un bouton « Envoyer un e-mail de test ». Réglages : `NOTIF_MINUTES`, `NOTIF_RAPPEL_H`, `NOTIF_ROLE_MIN` (`operateur` pour inclure les opérateurs).
+
 ## Variables utiles
 `DATABASE_URL`, `ADMIN_MOT_DE_PASSE`, `FERME_ENV=production`, `FERME_HTTPS=1`, `FERME_DOCS=1`, `SIMULATION_SECONDES`, `SAUVEGARDE_HEURES` (0 = coupé), `SAUVEGARDE_GARDER`, `SAUVEGARDES_DOSSIER`, `SESSION_HEURES`.
 
