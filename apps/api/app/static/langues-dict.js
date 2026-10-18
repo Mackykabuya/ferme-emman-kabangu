@@ -1734,4 +1734,35 @@ window.FERME_DICT = {
 "Esika emonani te : pesa ndingisa ya localisation na navigateur.",
 "Mahali hapapatikani: ruhusu eneo kwenye kivinjari."
 ]
+,
+"Rapports": [
+"Reports",
+"Bokaboli",
+"Ripoti"
+],
+"Un rapport avec l'eau consommée, le journal des arrosages, les alertes et l'état des parcelles. Le PDF se lit et s'imprime ; le fichier Excel permet de trier et de calculer.": [
+"A report with the water used, the watering log, alerts and the state of the plots. The PDF can be read and printed; the Excel file lets you sort and calculate.",
+"Rapport na mai esalelami, mokanda ya kolopa mai, bilobela mpe makambo ya bilanga. PDF ekoki kotangama mpe kobimisama ; fichier Excel epesi nzela ya kopona mpe kotanga.",
+"Ripoti yenye maji yaliyotumika, daftari la umwagiliaji, arifa na hali ya mashamba. PDF husomwa na kuchapishwa; faili ya Excel hukuwezesha kupanga na kuhesabu."
+],
+"90 derniers jours": [
+"Last 90 days",
+"Mikolo 90 ya suka",
+"Siku 90 zilizopita"
+],
+"Télécharger le PDF": [
+"Download the PDF",
+"Kozwa PDF",
+"Pakua PDF"
+],
+"Télécharger l'Excel": [
+"Download the Excel file",
+"Kozwa fichier Excel",
+"Pakua faili ya Excel"
+],
+"Le rapport n'a pas pu être créé (erreur": [
+"The report could not be created (error",
+"Rapport ekoki kosalama te (libunga",
+"Ripoti haikuweza kuundwa (hitilafu"
+]
 };

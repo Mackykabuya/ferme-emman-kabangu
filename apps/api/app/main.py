@@ -11,7 +11,7 @@ from .database import Base, SessionLocal, engine
 from . import ajouts, migration, notifications, simulation, sauvegarde
 from sqlalchemy import text
 from .auth import creer_admin_initial, email_admin_depuis_env, exiger
-from .routers import admin, alertes, auth as auth_api, decision, eau, diagnostic, irrigation, meteo, parcelles, plants
+from .routers import admin, alertes, rapports as rapports_api, auth as auth_api, decision, eau, diagnostic, irrigation, meteo, parcelles, plants
 from .routers import simulation as simulation_api
 from .seed import seed_catalogue
 from .seed_parcelles import seed_parcelles
@@ -141,6 +141,7 @@ app.include_router(parcelles.router, dependencies=[Depends(exiger("lecteur"))])
 app.include_router(meteo.router, dependencies=[Depends(exiger("lecteur"))])
 app.include_router(alertes.router, dependencies=[Depends(exiger("lecteur"))])
 app.include_router(eau.router, dependencies=[Depends(exiger("lecteur"))])
+app.include_router(rapports_api.router, dependencies=[Depends(exiger("lecteur"))])
 app.include_router(simulation_api.router, dependencies=[Depends(exiger("lecteur"))])
 app.include_router(auth_api.router)
 app.include_router(admin.router)

@@ -61,6 +61,10 @@ dialog::backdrop{background:#0006}h2{margin:0 0 4px}h4{margin:14px 0 4px}ul,ol{m
 <section class="eau" id="eau" aria-label="Consommation d'eau"><h2>Consommation d'eau</h2>
   <label>Période <select id="eau_jours"><option value="1">Dernier jour</option><option value="7" selected>7 derniers jours</option><option value="30">30 derniers jours</option></select></label>
   <div id="eau_corps" aria-live="polite"></div></section>
+<section class="eau" id="rapports" aria-label="Rapports"><h2>Rapports</h2>
+  <p class="note">Un rapport avec l'eau consommée, le journal des arrosages, les alertes et l'état des parcelles. Le PDF se lit et s'imprime ; le fichier Excel permet de trier et de calculer.</p>
+  <div class="barre2"><label>Période <select id="rap_jours"><option value="1">Dernier jour</option><option value="7" selected>7 derniers jours</option><option value="30">30 derniers jours</option><option value="90">90 derniers jours</option></select></label>
+  <button type="button" class="p" id="rap_pdf">Télécharger le PDF</button><button type="button" id="rap_xlsx">Télécharger l'Excel</button><span id="rap_msg" class="panne" role="status"></span></div></section>
 <section class="graph" id="graphes"><h2>Évolution d'une parcelle</h2>
   <div class="barre2"><label>Parcelle <select id="g_parcelle"></select></label>
   <label><input type="checkbox" id="live"> Actualisation automatique (5 s)</label></div>
@@ -280,4 +284,18 @@ $("n_ok").onclick = async () => { try {
   $("nouveau").close(); $("n_nom").value = ""; charger(); } catch (e) { $("n_err").textContent = e.message; } };
 (async () => { try { afficherMeteo(await api("/meteo")); } catch (e) {}
   try { plantes = await api("/plants"); plantes.forEach(p => { const o = el("option", "", p.nom); o.value = p.id; $("n_plante").appendChild(o); }); } catch (e) {} charger(); majSimulation(); $("live").checked = true; $("live").onchange(); })();
+
+async function telechargerRapport(ext, bouton) {
+  const msg = $("rap_msg"); msg.textContent = ""; bouton.disabled = true;
+  try {
+    const r = await fetch(`/rapports/ferme.${ext}?jours=${$("rap_jours").value}`);
+    if (!r.ok) { let d = ""; try { const j = await r.json(); d = typeof j.detail === "string" ? " " + j.detail : ""; } catch (e) {} throw new Error("Le rapport n'a pas pu être créé (erreur " + r.status + ")." + d + (d ? "" : " Regardez le message dans le terminal du serveur.")); }
+    const nom = ((r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/) || [])[1] || "rapport-ferme." + ext;
+    const url = URL.createObjectURL(await r.blob()), a = document.createElement("a");
+    a.href = url; a.download = nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (e) { msg.textContent = e.message; }
+  bouton.disabled = false;
+}
+$("rap_pdf").onclick = () => telechargerRapport("pdf", $("rap_pdf"));
+$("rap_xlsx").onclick = () => telechargerRapport("xlsx", $("rap_xlsx"));
 </script></body></html>
