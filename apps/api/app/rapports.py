@@ -1,6 +1,6 @@
 """Rapports de la ferme en Excel (.xlsx) et en PDF : eau consommée (réelle et « classique »), journal des arrosages,
 alertes en cours, état des parcelles. Les chiffres viennent des mêmes calculs que l'écran (aucun recalcul à part)."""
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -22,9 +22,18 @@ MESURES = [("humidite_sol_pct", "Humidité sol (%)"), ("temperature_sol_c", "Tem
 MAX_LIGNES_JOURNAL = 5000
 
 
+def decalage() -> timedelta:
+    """Pendant la simulation, le temps passe plus vite que la réalité et l'horloge simulée s'éloigne de la date du jour
+    (parfois de plusieurs mois). Les rapports affichent des dates RÉELLES : toutes les dates simulées sont ramenées en
+    arrière d'un nombre entier de jours (l'heure de la journée ne change donc pas). Sans simulation : aucun décalage."""
+    if simulation.SECONDES <= 0:
+        return timedelta(0)
+    return timedelta(days=(maintenant() - datetime.now(timezone.utc).replace(tzinfo=None)).days)
+
+
 def _local(iso_ou_date) -> datetime:
     d = datetime.fromisoformat(iso_ou_date) if isinstance(iso_ou_date, str) else iso_ou_date
-    return d.replace(tzinfo=timezone.utc).astimezone(moteur_eau.fuseau())
+    return (d - decalage()).replace(tzinfo=timezone.utc).astimezone(moteur_eau.fuseau())
 
 
 def _fmt(d: datetime) -> str:
@@ -33,6 +42,8 @@ def _fmt(d: datetime) -> str:
 
 def donnees(db: Session, jours: int) -> dict:
     bilan = consommation(jours, db)
+    dec = decalage()
+    bilan = {**bilan, "par_jour": [{**x, "date": (date.fromisoformat(x["date"]) - timedelta(days=dec.days)).isoformat()} for x in bilan["par_jour"]]}
     debut, fin = datetime.fromisoformat(bilan["debut"]), datetime.fromisoformat(bilan["fin"])
     parcelles = list(db.scalars(select(Parcelle).order_by(Parcelle.nom)))
     noms = {p.id: p.nom for p in parcelles}
@@ -44,7 +55,7 @@ def donnees(db: Session, jours: int) -> dict:
     cultures = {p["id"]: plantes[p["id"]] for p in bilan["parcelles"]}
     return {
         "jours": jours, "bilan": bilan, "debut": _fmt(_local(debut)), "fin": _fmt(_local(fin)),
-        "genere": _fmt(_local(maintenant())), "simule": simulation.SECONDES > 0, "cultures": cultures, "journal": journal,
+        "genere": _fmt(datetime.now(moteur_eau.fuseau())), "simule": simulation.SECONDES > 0, "decalage_jours": dec.days, "cultures": cultures, "journal": journal,
         "alertes": [{"gravite": GRAVITE[a["gravite"]], "parcelle": a["parcelle"], "titre": a["titre"], "message": a["message"],
                      "conseil": a["conseil"]} for a in toutes_les_alertes(db)],
         "etat": [{"nom": p.nom, "culture": plantes[p.id], "surface_m2": round(p.surface_m2), "sol": p.type_sol, "stade": p.stade,
@@ -101,7 +112,7 @@ def en_xlsx(d: dict) -> bytes:
         ("Alertes en cours", len(d["alertes"])), ("Arrosages dans la période", len(d["journal"])),
         ("Méthode de comparaison", b["methode"]),
         ("Remarque", "Comparaison peu fiable : moins d'un jour de données." if not b["comparaison_fiable"] else "")]
-        + ([("Données", "SIMULÉES : capteurs et dates simulés, le temps passe plus vite que la réalité.")] if d["simule"] else []),
+        + ([("Données", "SIMULÉES : les capteurs sont simulés (le temps passe plus vite que la réalité)." + (f" Les dates sont ramenées à la date du jour ({abs(d['decalage_jours'])} jour(s) d'écart)." if d["decalage_jours"] else ""))] if d["simule"] else []),
         [34, 90], premiere=True)
     r["B10"].alignment = Alignment(wrap_text=True, vertical="top")
     feuille("Eau par parcelle", ["Parcelle", "Culture", "Eau réelle (L)", "Classique (L)", "Économie (L)", "Économie (%)"],
@@ -171,7 +182,8 @@ def en_pdf(d: dict) -> bytes:
     else:
         el += entete
     if d["simule"]:
-        el += [Spacer(1, 6), Paragraph("<b>Données simulées :</b> les capteurs et les dates sont simulés (le temps passe plus vite que la réalité).", petit)]
+        el += [Spacer(1, 6), Paragraph("<b>Données simulées :</b> les capteurs sont simulés (le temps passe plus vite que la réalité)."
+                                                      + (f" Les dates sont ramenées à la date du jour ({abs(d['decalage_jours'])} jour(s) d'écart)." if d["decalage_jours"] else ""), petit)]
     el.append(Spacer(1, 10))
     tuiles = Table([[Paragraph(f"<font size=15><b>{n(f['reels'])}</b></font><br/>litres envoyés", txt),
                      Paragraph(f"<font size=15><b>{n(f['classiques'])}</b></font><br/>litres en arrosage classique", txt),

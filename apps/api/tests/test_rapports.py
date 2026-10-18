@@ -63,3 +63,27 @@ def test_module_manquant_donne_un_message_clair(ferme, monkeypatch):  # noqa: F8
     monkeypatch.setattr(rapports, "en_pdf", casse)
     r = ferme.get("/rapports/ferme.pdf")
     assert r.status_code == 503 and "reportlab" in r.json()["detail"] and "pip install" in r.json()["detail"]
+
+
+def test_les_dates_du_rapport_sont_reelles_meme_si_la_simulation_est_dans_le_futur(ferme, monkeypatch):  # noqa: F811
+    from datetime import datetime, timedelta, timezone
+
+    from app import models_parcelles as mp
+    from app import rapports
+    from app import simulation as sim
+    monkeypatch.setattr(sim, "SECONDES", 5.0)
+    futur = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=160, hours=3)
+    monkeypatch.setitem(mp._horloge, "simulee", futur)
+    pid = ferme.get("/parcelles").json()[0]["id"]
+    assert ferme.post(f"/parcelles/{pid}/vanne", json={"action": "ouvrir", "duree_min": 30}).status_code in (200, 201)
+    from app.database import get_db
+    from app.main import app
+    db = next(app.dependency_overrides[get_db]())
+    d = rapports.donnees(db, 1)
+    an = str(datetime.now().year)
+    assert d["decalage_jours"] == 160
+    assert d["debut"][6:10] == an and d["fin"][6:10] == an and d["genere"][6:10] == an
+    assert d["journal"] and all(j["quand"][6:10] == an for j in d["journal"])
+    assert all(x["date"][:4] == an for x in d["bilan"]["par_jour"])
+    xlsx = ferme.get("/rapports/ferme.xlsx?jours=1")
+    assert xlsx.status_code == 200 and ferme.get("/rapports/ferme.pdf?jours=1").status_code == 200
