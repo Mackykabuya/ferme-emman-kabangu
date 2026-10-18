@@ -1765,4 +1765,56 @@ window.FERME_DICT = {
 "Rapport ekoki kosalama te (libunga",
 "Ripoti haikuweza kuundwa (hitilafu"
 ]
+,
+"Remettre à la date d'aujourd'hui": [
+"Reset to today's date",
+"Zongisa na mokolo ya lelo",
+"Rudisha kwenye tarehe ya leo"
+],
+"Efface l'historique simulé (mesures, arrosages) après une sauvegarde, et repart de la date réelle": [
+"Erases the simulated history (measures, watering) after a backup, and restarts from the real date",
+"Elongoli histoire ya simulation (mesures, kolopa mai) nsima ya sauvegarde, mpe ebandi na mokolo ya solo",
+"Hufuta historia ya uigaji (vipimo, umwagiliaji) baada ya nakala rudufu, na kuanza upya kutoka tarehe halisi"
+]
+,
+"Application sur le téléphone": [
+"App on your phone",
+"Application na telefone",
+"Programu kwenye simu"
+],
+"Installez la ferme comme une application : icône sur l'écran d'accueil, ouverture en plein écran, sans barre d'adresse.": [
+"Install the farm as an app: icon on the home screen, opens full screen, no address bar.",
+"Batia elanga lokola application : elilingi na ecran ya ebandeli, efungwami na ecran mobimba, barre ya adresse te.",
+"Sakinisha shamba kama programu: ikoni kwenye skrini ya mwanzo, hufunguka skrini nzima, bila upau wa anwani."
+],
+"Installer l'application": [
+"Install the app",
+"Batia application",
+"Sakinisha programu"
+],
+"L'application est déjà installée sur cet appareil.": [
+"The app is already installed on this device.",
+"Application ebatami naino na appareil oyo.",
+"Programu tayari imesakinishwa kwenye kifaa hiki."
+],
+"L'installation demande une adresse sécurisée en https:// (ce sera le cas une fois la ferme en ligne). Elle n'est pas possible sur une adresse http:// du réseau local.": [
+"Installation needs a secure https:// address (it will be the case once the farm is online). It is not possible on an http:// address of the local network.",
+"Kobatela esengeli na adresse ya libateli https:// (ekozala bongo ntango elanga ekozala na internet). Ekoki te na adresse http:// ya réseau local.",
+"Usakinishaji unahitaji anwani salama ya https:// (itakuwa hivyo shamba likiwa mtandaoni). Haiwezekani kwenye anwani ya http:// ya mtandao wa ndani."
+],
+"Sur iPhone : ouvrez cette page dans Safari, touchez le bouton Partager, puis « Sur l'écran d'accueil ».": [
+"On iPhone: open this page in Safari, tap the Share button, then “Add to Home Screen”.",
+"Na iPhone : fungola lokasa oyo na Safari, finga bouton Partager, na nsima « Sur l'écran d'accueil ».",
+"Kwenye iPhone: fungua ukurasa huu kwenye Safari, gusa kitufe cha Shiriki, kisha « Ongeza kwenye Skrini ya Mwanzo »."
+],
+"Si le bouton n'apparaît pas : dans le menu du navigateur (trois points), choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».": [
+"If the button does not appear: in the browser menu (three dots), choose “Install app” or “Add to Home screen”.",
+"Soki bouton emonani te : na menu ya navigateur (ba point misato), pona « Installer l'application » to « Ajouter à l'écran d'accueil ».",
+"Kitufe kisipoonekana: kwenye menyu ya kivinjari (vitone vitatu), chagua « Sakinisha programu » au « Ongeza kwenye skrini ya mwanzo »."
+],
+"Pas de connexion": [
+"No connection",
+"Network ezali te",
+"Hakuna muunganisho"
+]
 };

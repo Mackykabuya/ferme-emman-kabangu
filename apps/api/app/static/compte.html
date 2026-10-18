@@ -14,7 +14,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ligne)}.off{color:var(--doux)}
 .grille{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}.note{color:var(--doux);font-size:.85rem}
 .droits td:first-child{font-weight:600;white-space:nowrap}
-</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script></head><body class="page-compte">
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script><link rel="manifest" href="/tableau-de-bord/manifest.webmanifest"><meta name="theme-color" content="#17301f"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ferme EK"><script src="/tableau-de-bord/pwa.js"></script></head><body class="page-compte">
 <header><h1><img class="logo" src="logo.png" alt="">Ferme Emman Kabangu</h1><p><a href="parcelles.html">Retour aux parcelles</a></p></header>
 
 <section aria-labelledby="t1"><h2 id="t1">Mon mot de passe</h2>
@@ -32,6 +32,11 @@ table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{text-align:left
     <label>Mot de passe (confirmation)<br><input id="e_mdp" type="password" autocomplete="current-password" required></label>
     <button>Enregistrer</button>
   </form><div id="e_msg" class="msg" role="status"></div></section>
+
+<section aria-labelledby="t8"><h2 id="t8">Application sur le téléphone</h2>
+  <p class="note" id="pwa_txt">Installez la ferme comme une application : icône sur l'écran d'accueil, ouverture en plein écran, sans barre d'adresse.</p>
+  <button type="button" id="pwa_btn" class="p" hidden>Installer l'application</button>
+  <div id="pwa_aide" class="note"></div></section>
 
 <section aria-labelledby="t7"><h2 id="t7">Alertes par e-mail</h2>
   <p class="note">Capteur en panne, vanne qui n'arrose pas, pompe trop faible : un e-mail est envoyé (une seule fois par problème, avec un rappel toutes les 12 h s'il dure). Réservé aux rôles agronome et administrateur, et à une adresse e-mail enregistrée.</p>
@@ -174,4 +179,18 @@ $("sauver").onclick = async () => {
   chargerSauvegardes();
 };
 charger(); chargerDemandes(); chargerSauvegardes();
+
+function majPwa() {
+  const b = $("pwa_btn"), a = $("pwa_aide"), P = window.FermePWA || {};
+  b.hidden = !P.proposition;
+  if (P.installee) { a.textContent = "L'application est déjà installée sur cet appareil."; return; }
+  if (P.proposition) { a.textContent = ""; return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  a.textContent = !window.isSecureContext
+    ? "L'installation demande une adresse sécurisée en https:// (ce sera le cas une fois la ferme en ligne). Elle n'est pas possible sur une adresse http:// du réseau local."
+    : ios ? "Sur iPhone : ouvrez cette page dans Safari, touchez le bouton Partager, puis « Sur l'écran d'accueil »."
+          : "Si le bouton n'apparaît pas : dans le menu du navigateur (trois points), choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».";
+}
+$("pwa_btn").onclick = () => FermePWA.installer();
+document.addEventListener("ferme-pwa", majPwa); majPwa();
 </script></body></html>

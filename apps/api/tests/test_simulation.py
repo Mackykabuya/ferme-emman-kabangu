@@ -69,3 +69,33 @@ def test_simulation_desactivee_refuse_de_reprendre(client, monkeypatch):  # noqa
     monkeypatch.setattr(sim, "SECONDES", 0.0)
     assert client[0].get("/simulation").json()["disponible"] is False
     assert client[0].post("/simulation/reprendre").status_code == 409
+
+
+def test_reinitialiser_remet_la_simulation_a_la_date_du_jour(client, ferme, monkeypatch):  # noqa: F811
+    from app import sauvegarde
+    c, Session = client
+    monkeypatch.setattr(sim, "SECONDES", 5.0)
+    monkeypatch.setattr(sauvegarde, "sauvegarder", lambda *a, **k: {"nom": "copie-test.db"})
+    monkeypatch.setitem(mp._horloge, "simulee", None)
+    for k, v in {"actif": True, "horloge": datetime(2027, 3, 27, 5, 0), "pas": 0}.items():     # simulateur « dans le futur »
+        monkeypatch.setitem(sim.ETAT, k, v)
+    sim.PANNES[1] = "bloque"
+    for _ in range(3):
+        sim.avancer(Session)
+    pid = c.get("/parcelles").json()[0]["id"]
+    assert len(c.get(f"/parcelles/{pid}/mesures").json()) == 3
+    r = c.post("/simulation/reinitialiser")
+    assert r.status_code == 200 and r.json()["sauvegarde"] == "copie-test.db" and sim.PANNES == {}
+    assert datetime.fromisoformat(r.json()["heure_simulee"]).year == datetime.now().year           # plus en 2027
+    assert c.get(f"/parcelles/{pid}/mesures").json() == []                                         # historique effacé
+    assert all(not p["vanne_ouverte"] for p in c.get("/parcelles").json()) and sim.ETAT["actif"] is True
+    sim.avancer(Session)                                                                           # et ça repart de la date réelle
+    assert c.get(f"/parcelles/{pid}/mesures").json()[0]["date"][:4] == str(datetime.now().year)
+
+
+def test_reinitialiser_demande_le_role_admin_et_la_simulation_active(client, ferme, monkeypatch):  # noqa: F811
+    c, _ = client
+    monkeypatch.setattr(sim, "SECONDES", 0.0)
+    assert c.post("/simulation/reinitialiser").status_code == 409
+    ferme.headers.pop("Authorization", None)
+    assert c.post("/simulation/reinitialiser").status_code == 401

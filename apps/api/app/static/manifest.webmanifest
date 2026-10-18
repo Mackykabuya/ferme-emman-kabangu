@@ -1,0 +1,17 @@
+{
+  "name": "Ferme Emman Kabangu",
+  "short_name": "Ferme EK",
+  "description": "Diagnostic du sol, irrigation et suivi de la ferme.",
+  "lang": "fr",
+  "start_url": "/tableau-de-bord/parcelles.html",
+  "scope": "/tableau-de-bord/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#17301f",
+  "background_color": "#17301f",
+  "icons": [
+    {"src": "/tableau-de-bord/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/tableau-de-bord/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/tableau-de-bord/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

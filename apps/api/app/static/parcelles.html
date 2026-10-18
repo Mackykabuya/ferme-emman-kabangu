@@ -39,7 +39,7 @@ dialog::backdrop{background:#0006}h2{margin:0 0 4px}h4{margin:14px 0 4px}ul,ol{m
 .eau .tuile b{display:block;font-size:1.35rem}.eau .tuile span{color:var(--doux);font-size:.85rem}.eau .gain b{color:var(--ok)}.eau .perte b{color:var(--alerte)}
 .eau table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:8px}.eau th,.eau td{text-align:right;padding:4px 8px;border-bottom:1px solid var(--ligne)}.eau th:first-child,.eau td:first-child{text-align:left}
 .eau svg{width:100%;height:auto;max-height:200px}.eau .note{margin:6px 0 0}
-</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script></head><body class="page-parcelles">
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script><link rel="manifest" href="/tableau-de-bord/manifest.webmanifest"><meta name="theme-color" content="#17301f"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ferme EK"><script src="/tableau-de-bord/pwa.js"></script></head><body class="page-parcelles">
 <header><h1><img class="logo" src="logo.png" alt="">Ferme Emman Kabangu</h1><p>Vue d'ensemble des parcelles · <a href="carte.html">Carte</a> · <a href="catalogue.html">Catalogue des plantes</a> · <a href="index.html">Analyser une parcelle libre</a></p></header>
 <div class="barre" role="group" aria-label="Météo du moment">
   <div>Température de l'air (°C)<input id="t" type="number" value="30"></div>
@@ -261,11 +261,23 @@ async function majSimulation() {
   try {
     const s = await api("/simulation"), z = $("simu"); z.replaceChildren();
     if (!s.disponible) { z.textContent = "Simulation désactivée : les mesures viennent des capteurs."; return; }
-    const hs = s.heure_simulee ? new Date(s.heure_simulee + "Z").toLocaleString("fr-FR", {weekday: "short", hour: "2-digit", minute: "2-digit"}) : "démarrage…";
+    const hs = s.heure_simulee ? new Date(s.heure_simulee + "Z").toLocaleString("fr-FR", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"}) : "démarrage…";
     z.appendChild(document.createTextNode(`Simulation des capteurs ${s.active ? "en cours" : "en pause"} · heure simulée : ${hs} · le temps passe ${s.acceleration} fois plus vite `));
     const b = el("button", "", s.active ? "Mettre en pause" : "Reprendre"); b.type = "button";
     b.onclick = async () => { await api(`/simulation/${s.active ? "pause" : "reprendre"}`, {m: "POST", b: {}}); majSimulation(); };
     Ferme.reserver(b, "operateur"); z.appendChild(b);
+    const ecart = s.heure_simulee ? (new Date(s.heure_simulee + "Z") - Date.now()) / 864e5 : 0;
+    if (Math.abs(ecart) > 1) z.appendChild(document.createTextNode(` · ⚠ la date simulée est ${ecart > 0 ? "en avance de" : "en retard de"} ${Math.round(Math.abs(ecart))} jour(s) sur la date réelle `));
+    if (Ferme.peut("admin")) {
+      const r = el("button", "", "Remettre à la date d'aujourd'hui"); r.type = "button";
+      r.title = "Efface l'historique simulé (mesures, arrosages) après une sauvegarde, et repart de la date réelle";
+      r.onclick = async () => {
+        if (!confirm("Remettre la simulation à la date d'aujourd'hui ?\n\nL'historique simulé (graphiques, arrosages, consommation d'eau) sera effacé. Une sauvegarde de la base est faite avant.")) return;
+        try { const x = await api("/simulation/reinitialiser", {m: "POST", b: {}}); alert("Fait. Sauvegarde de sécurité : " + x.sauvegarde); await charger(); majSimulation(); }
+        catch (e) { alert(e.message); }
+      };
+      z.appendChild(r);
+    }
     $("testpanne").hidden = !Ferme.peut("operateur");
     const pn = Object.entries(s.pannes || {}).map(([id, t]) => { const d = donnees.find(x => x.id === +id); return `${d ? d.nom : id} (${t === "bloque" ? "capteur figé" : t === "aberrant" ? "valeur impossible" : "vanne sans eau"})`; });
     $("p_etat").textContent = pn.length ? "Pannes en cours : " + pn.join(", ") : "";

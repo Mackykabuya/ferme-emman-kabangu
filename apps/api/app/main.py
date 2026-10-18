@@ -1,11 +1,17 @@
 import asyncio
+import mimetypes
 import os
+import warnings
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+mimetypes.add_type("application/manifest+json", ".webmanifest")      # application installable (PWA)
+# Avertissement sans conséquence de scikit-learn/joblib sur les versions récentes de Python : il noyait le journal du serveur
+warnings.filterwarnings("ignore", message=r".*sklearn\.utils\.parallel\.delayed.*", category=UserWarning)
 
 from .database import Base, SessionLocal, engine
 from . import ajouts, migration, notifications, simulation, sauvegarde
@@ -130,6 +136,8 @@ async def en_tetes_securite(request: Request, call_next):
     chemin = request.url.path
     if not chemin.startswith("/tableau-de-bord") and chemin != "/":
         rep.headers.setdefault("Cache-Control", "no-store")
+    elif chemin == "/tableau-de-bord/sw.js":
+        rep.headers["Cache-Control"] = "no-cache"          # le navigateur revérifie toujours le service worker
     return rep
 
 
