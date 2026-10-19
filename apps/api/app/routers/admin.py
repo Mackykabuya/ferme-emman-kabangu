@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
-from .. import courriel, notifications, sauvegarde
+from sqlalchemy.orm import Session
+
+from .. import courriel, journal, notifications, sauvegarde
 from ..auth import exiger, utilisateur_courant
+from ..database import get_db
+from ..engine import eau as moteur_eau
 
 router = APIRouter(prefix="/admin", tags=["Administration"], dependencies=[Depends(exiger("admin"))])
 
@@ -42,3 +46,15 @@ def test_courriel(u=Depends(utilisateur_courant)):
                             f"« {notifications.ROLE_MIN} » ou plus, toutes les {notifications.MINUTES:g} minutes si besoin."):
         raise HTTPException(502, "L'envoi a échoué : vérifiez SMTP_* dans le fichier .env (détail dans le journal du serveur).")
     return {"envoye_a": u.email}
+
+
+@router.get("/journal")
+def lire_journal(jours: int | None = Query(None, ge=1, le=3650), utilisateur: str = Query("", max_length=60), q: str = Query("", max_length=80),
+                 limite: int = Query(100, ge=1, le=500), debut: int = Query(0, ge=0), db: Session = Depends(get_db)):
+    """Journal des actions (administrateur) : les plus récentes d'abord. Filtres : période en jours, compte, mot recherché."""
+    total, lignes = journal.lister(db, jours, utilisateur.strip(), q.strip(), limite, debut)
+    from datetime import timezone
+    tz = moteur_eau.fuseau()
+    return {"total": total, "actions": [
+        {"id": j.id, "quand": j.at.replace(tzinfo=timezone.utc).astimezone(tz).strftime("%d/%m/%Y %H:%M:%S"), "utilisateur": j.utilisateur,
+         "role": j.role, "action": j.action, "cible": j.cible, "detail": j.detail, "ip": j.ip} for j in lignes]}

@@ -13,8 +13,8 @@ mimetypes.add_type("application/manifest+json", ".webmanifest")      # applicati
 # Avertissement sans conséquence de scikit-learn/joblib sur les versions récentes de Python : il noyait le journal du serveur
 warnings.filterwarnings("ignore", message=r".*sklearn\.utils\.parallel\.delayed.*", category=UserWarning)
 
-from .database import Base, SessionLocal, engine
-from . import ajouts, migration, notifications, simulation, sauvegarde
+from .database import Base, SessionLocal, engine, get_db
+from . import ajouts, journal, migration, notifications, simulation, sauvegarde
 from sqlalchemy import text
 from .auth import creer_admin_initial, email_admin_depuis_env, exiger
 from .routers import admin, alertes, rapports as rapports_api, auth as auth_api, decision, eau, diagnostic, irrigation, meteo, parcelles, plants
@@ -139,6 +139,44 @@ async def en_tetes_securite(request: Request, call_next):
     elif chemin == "/tableau-de-bord/sw.js":
         rep.headers["Cache-Control"] = "no-cache"          # le navigateur revérifie toujours le service worker
     return rep
+
+
+class Journaliseur:
+    """Note les écritures réussies dans le journal des actions. Intergiciel ASGI « pur » : il agit une fois la requête
+    ENTIÈREMENT terminée (réponse envoyée, connexions à la base refermées), donc sans jamais ralentir ni gêner l'action."""
+
+    def __init__(self, application):
+        self.app = application
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] not in ("POST", "PUT", "DELETE"):
+            return await self.app(scope, receive, send)
+        scope.setdefault("state", {})                           # partagé avec les routes (utilisateur, précisions)
+        resultat = {"statut": 0}
+
+        async def envoi(message):
+            if message["type"] == "http.response.start":
+                resultat["statut"] = message["status"]
+            await send(message)
+
+        await self.app(scope, receive, envoi)
+        if 0 < resultat["statut"] < 400:
+            requete = Request(scope)
+
+            def noter():
+                fabrique = app.dependency_overrides.get(get_db, get_db)      # (les tests branchent leur propre base)
+                gen = fabrique()
+                try:
+                    journal.enregistrer(next(gen), requete, resultat["statut"])
+                finally:
+                    gen.close()
+            try:
+                await asyncio.to_thread(noter)
+            except Exception as e:                              # le journal ne doit jamais faire échouer une action déjà réussie
+                print("Journal des actions en échec :", e)
+
+
+app.add_middleware(Journaliseur)
 
 
 app.include_router(plants.router, dependencies=[Depends(exiger("lecteur"))])

@@ -8,7 +8,7 @@ from tests.test_parcelles import ferme  # noqa: F401
 from tests.test_plants import client  # noqa: F401
 
 STATIC = Path(__file__).resolve().parents[1] / "app" / "static"
-PAGES = ["accueil", "login", "inscription", "mot-de-passe-oublie", "reinitialiser", "parcelles", "catalogue", "index", "compte", "carte"]
+PAGES = ["accueil", "login", "journal", "inscription", "mot-de-passe-oublie", "reinitialiser", "parcelles", "catalogue", "index", "compte", "carte"]
 
 
 def test_manifest_valide_et_icones_presentes(ferme):  # noqa: F811

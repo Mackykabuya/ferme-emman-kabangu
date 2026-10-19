@@ -1817,4 +1817,260 @@ window.FERME_DICT = {
 "Network ezali te",
 "Hakuna muunganisho"
 ]
+,
+"Journal des actions": [
+"Action log",
+"Mokanda ya misala",
+"Daftari la vitendo"
+],
+"Ferme Emman Kabangu · Journal des actions": [
+"Ferme Emman Kabangu · Action log",
+"Ferme Emman Kabangu · Mokanda ya misala",
+"Ferme Emman Kabangu · Daftari la vitendo"
+],
+"Journal des actions ·": [
+"Action log ·",
+"Mokanda ya misala ·",
+"Daftari la vitendo ·"
+],
+"Retour à Mon compte": [
+"Back to My account",
+"Kozonga na Compte na ngai",
+"Rudi kwenye Akaunti yangu"
+],
+"Qui a fait quoi, et quand : ouvertures de vannes, changements de parcelles, de plantes, de comptes, connexions et tentatives refusées. Les mots de passe n'y figurent jamais.": [
+"Who did what, and when: valve openings, changes to plots, plants and accounts, logins and refused attempts. Passwords never appear here.",
+"Nani asali nini, mpe ntango nini : kofungola ba vanne, bobongoli ya bilanga, ya bilanga ya mbuma, ya ba compte, kokota mpe komeka oyo ezuaki ndima te. Ba mot de passe emonani kuna soki moke te.",
+"Nani alifanya nini, na lini: kufungua valvu, mabadiliko ya mashamba, mimea na akaunti, kuingia na majaribio yaliyokataliwa. Nywila hazionekani hapa kamwe."
+],
+"Tous les comptes": [
+"All accounts",
+"Ba compte nyonso",
+"Akaunti zote"
+],
+"Compte": [
+"Account",
+"Compte",
+"Akaunti"
+],
+"Mot recherché": [
+"Search word",
+"Liloba ya koluka",
+"Neno la kutafuta"
+],
+"Afficher": [
+"Show",
+"Lakisa",
+"Onyesha"
+],
+"Tout": [
+"All",
+"Nyonso",
+"Yote"
+],
+"Date et heure": [
+"Date and time",
+"Mokolo mpe ngonga",
+"Tarehe na saa"
+],
+"Sur quoi": [
+"On what",
+"Likolo ya nini",
+"Kuhusu nini"
+],
+"Détail": [
+"Detail",
+"Makambo",
+"Maelezo"
+],
+"Adresse IP": [
+"IP address",
+"Adresse IP",
+"Anwani ya IP"
+],
+"Aucune action pour ces critères.": [
+"No action for these criteria.",
+"Misala ezali te mpo na makambo oyo.",
+"Hakuna kitendo kwa vigezo hivi."
+],
+"← Plus récentes": [
+"← Newer",
+"← Ya sika koleka",
+"← Mpya zaidi"
+],
+"Plus anciennes →": [
+"Older →",
+"Ya kala koleka →",
+"Za zamani zaidi →"
+],
+"Exporter en CSV": [
+"Export as CSV",
+"Bimisa na CSV",
+"Hamisha kama CSV"
+],
+"Ouvrir le journal": [
+"Open the log",
+"Fungola mokanda",
+"Fungua daftari"
+],
+"Qui a ouvert une vanne, modifié une parcelle, créé un compte ou tenté de se connecter, et quand.": [
+"Who opened a valve, changed a plot, created an account or tried to log in, and when.",
+"Nani afungolaki vanne, abongolaki elanga, asalaki compte to ameki kokota, mpe ntango nini.",
+"Nani alifungua valvu, kubadilisha shamba, kuunda akaunti au kujaribu kuingia, na lini."
+],
+"Le journal est réservé à l'administrateur.": [
+"The log is reserved for the administrator.",
+"Mokanda ezali mpo na administrateur kaka.",
+"Daftari ni la msimamizi pekee."
+],
+"Connexion refusée": [
+"Login refused",
+"Kokota ekweyi",
+"Kuingia kumekataliwa"
+],
+"Mot de passe changé": [
+"Password changed",
+"Mot de passe ebongolami",
+"Nywila imebadilishwa"
+],
+"Adresse e-mail modifiée": [
+"E-mail address changed",
+"Adresse e-mail ebongolami",
+"Barua pepe imebadilishwa"
+],
+"Lien de réinitialisation généré": [
+"Reset link generated",
+"Lien ya kobongisa ebimisami",
+"Kiungo cha kuweka upya kimeundwa"
+],
+"Compte créé": [
+"Account created",
+"Compte esalemi",
+"Akaunti imeundwa"
+],
+"Compte modifié": [
+"Account changed",
+"Compte ebongolami",
+"Akaunti imebadilishwa"
+],
+"Demande d'inscription": [
+"Registration request",
+"Asengi kokomisama",
+"Ombi la usajili"
+],
+"Inscription acceptée": [
+"Registration accepted",
+"Bokomisami endimami",
+"Usajili umekubaliwa"
+],
+"Inscription refusée": [
+"Registration refused",
+"Bokomisami ekweyi",
+"Usajili umekataliwa"
+],
+"Mot de passe oublié (demande)": [
+"Forgotten password (request)",
+"Mot de passe elimwami (asengi)",
+"Nywila iliyosahaulika (ombi)"
+],
+"Mot de passe réinitialisé": [
+"Password reset",
+"Mot de passe ebongisami",
+"Nywila imewekwa upya"
+],
+"Météo saisie à la main": [
+"Weather entered by hand",
+"Mbula-moi ekomami na loboko",
+"Hali ya hewa imeingizwa kwa mkono"
+],
+"Météo réelle récupérée": [
+"Real weather retrieved",
+"Mbula-moi ya solo ezwami",
+"Hali ya hewa halisi imepatikana"
+],
+"Arrosage automatique lancé": [
+"Automatic watering started",
+"Kolopa mai ya automatique ebandi",
+"Umwagiliaji wa kiotomatiki umeanza"
+],
+"Parcelle créée": [
+"Plot created",
+"Elanga esalemi",
+"Shamba limeundwa"
+],
+"Parcelle modifiée": [
+"Plot changed",
+"Elanga ebongolami",
+"Shamba limebadilishwa"
+],
+"Parcelle supprimée": [
+"Plot deleted",
+"Elanga elongolami",
+"Shamba limefutwa"
+],
+"Plante ajoutée au catalogue": [
+"Plant added to the catalogue",
+"Mbuma ebakisami na catalogue",
+"Mmea umeongezwa kwenye orodha"
+],
+"Plante réactivée": [
+"Plant reactivated",
+"Mbuma ezongisami",
+"Mmea umewashwa tena"
+],
+"Variété ajoutée": [
+"Variety added",
+"Variété ebakisami",
+"Aina imeongezwa"
+],
+"Variété retirée": [
+"Variety removed",
+"Variété elongolami",
+"Aina imeondolewa"
+],
+"Plante modifiée": [
+"Plant changed",
+"Mbuma ebongolami",
+"Mmea umebadilishwa"
+],
+"Plante désactivée": [
+"Plant deactivated",
+"Mbuma ezimisami",
+"Mmea umezimwa"
+],
+"Simulation mise en pause": [
+"Simulation paused",
+"Simulation etelemisami",
+"Uigaji umesitishwa"
+],
+"Simulation reprise": [
+"Simulation resumed",
+"Simulation ebandi lisusu",
+"Uigaji umeendelea"
+],
+"Panne simulée": [
+"Simulated fault",
+"Libebi ya simulation",
+"Hitilafu ya kuigwa"
+],
+"Panne simulée réparée": [
+"Simulated fault repaired",
+"Libebi ya simulation ebongisami",
+"Hitilafu ya kuigwa imerekebishwa"
+],
+"Simulation remise à la date du jour": [
+"Simulation reset to today's date",
+"Simulation ezongisami na mokolo ya lelo",
+"Uigaji umerudishwa kwenye tarehe ya leo"
+],
+"Sauvegarde de la base créée": [
+"Database backup created",
+"Sauvegarde ya base esalemi",
+"Nakala rudufu ya hifadhidata imeundwa"
+],
+"E-mail de test envoyé": [
+"Test e-mail sent",
+"E-mail ya komeka etindami",
+"Barua pepe ya majaribio imetumwa"
+]
 };

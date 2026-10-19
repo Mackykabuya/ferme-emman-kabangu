@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="icon" href="logo-icone.png" type="image/png"><link rel="apple-touch-icon" href="logo-icone.png"><link rel="stylesheet" href="marque.css"><script src="langues-dict.js"></script><script src="langues.js"></script><script src="auth.js"></script><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferme Emman Kabangu · Journal des actions</title>
+<style>
+:root{--fond:#eef2ec;--encre:#17301f;--doux:#5d6f62;--ligne:#d5ddd3;--eau:#1d6fa5;--ok:#2e7d4f;--alerte:#b7791f;--danger:#b3382c}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+header{background:var(--encre);color:#eef6ea;padding:16px 24px}header h1{margin:0;font-size:1.3rem}header p{margin:2px 0 0;color:#a9c4b0}header a{color:#bfe0c9}
+main{padding:14px 24px 30px}
+.filtres{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end;background:#fff;border:1px solid var(--ligne);border-radius:12px;padding:12px 14px}
+.filtres label{display:flex;flex-direction:column;font-size:.85rem;color:var(--doux)}
+input,select,button{font:inherit;padding:7px 10px;border:1px solid var(--ligne);border-radius:6px;background:#fff;color:var(--encre)}
+button{cursor:pointer}button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:600}button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid #7fb6dc;outline-offset:2px}
+.resume{margin:12px 2px;color:var(--doux)}.resume b{color:var(--encre)}
+.tableau{overflow-x:auto;background:#fff;border:1px solid var(--ligne);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--ligne);vertical-align:top}
+th{background:var(--encre);color:#fff;position:sticky;top:0;white-space:nowrap}
+tr:last-child td{border-bottom:0}td.quand{white-space:nowrap;color:var(--doux)}td small{color:var(--doux)}
+tr.refus td{background:#fdf3f1}tr.refus td.action{color:var(--danger);font-weight:700}
+td.action{font-weight:600}
+.pied{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:12px}
+.msg{min-height:1.4em;color:var(--danger)}
+@media(max-width:700px){main{padding:10px 12px 24px}}
+</style><link rel="manifest" href="/tableau-de-bord/manifest.webmanifest"><meta name="theme-color" content="#17301f"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ferme EK"><script src="/tableau-de-bord/pwa.js"></script></head><body>
+<header><h1><img class="logo" src="logo.png" alt="">Ferme Emman Kabangu</h1><p>Journal des actions · <a href="compte.html">Retour à Mon compte</a></p></header>
+<main>
+  <p class="note" style="color:var(--doux);margin:0 0 10px">Qui a fait quoi, et quand : ouvertures de vannes, changements de parcelles, de plantes, de comptes, connexions et tentatives refusées. Les mots de passe n'y figurent jamais.</p>
+  <form class="filtres" id="filtres">
+    <label>Période<select id="f_jours"><option value="1">Dernier jour</option><option value="7" selected>7 derniers jours</option><option value="30">30 derniers jours</option><option value="90">90 derniers jours</option><option value="">Tout</option></select></label>
+    <label>Compte<select id="f_user"><option value="">Tous les comptes</option></select></label>
+    <label>Mot recherché<input id="f_q" type="search" placeholder="vanne, parcelle A1, refusée…" maxlength="80"></label>
+    <button class="p" type="submit">Afficher</button>
+  </form>
+  <div class="resume" id="resume" aria-live="polite"></div>
+  <div class="tableau"><table><thead><tr><th>Date et heure</th><th>Compte</th><th>Action</th><th>Sur quoi</th><th>Détail</th><th>Adresse IP</th></tr></thead><tbody id="corps"></tbody></table></div>
+  <div class="pied"><span class="msg" id="msg" role="status"></span>
+    <span><button type="button" id="prec">← Plus récentes</button> <button type="button" id="suiv">Plus anciennes →</button> <button type="button" id="csv">Exporter en CSV</button></span></div>
+</main>
+<script>
+const $ = id => document.getElementById(id), PAGE = 100;
+let debut = 0, derniere = [];
+function cellule(tr, texte, cls) { const td = document.createElement("td"); if (cls) td.className = cls; td.textContent = texte; tr.appendChild(td); return td; }
+function params() {
+  const p = new URLSearchParams({limite: PAGE, debut});
+  if ($("f_jours").value) p.set("jours", $("f_jours").value);
+  if ($("f_user").value) p.set("utilisateur", $("f_user").value);
+  if ($("f_q").value.trim()) p.set("q", $("f_q").value.trim());
+  return p;
+}
+async function charger() {
+  $("msg").textContent = "";
+  let r;
+  try { r = await fetch("/admin/journal?" + params()); } catch (e) { $("msg").textContent = "Le serveur ne répond pas."; return; }
+  if (r.status === 403) { $("msg").textContent = "Le journal est réservé à l'administrateur."; return; }
+  if (!r.ok) { $("msg").textContent = "Erreur " + r.status + "."; return; }
+  const d = await r.json(); derniere = d.actions;
+  const corps = $("corps"); corps.replaceChildren();
+  d.actions.forEach(a => {
+    const tr = document.createElement("tr"); if (a.action === "Connexion refusée") tr.className = "refus";
+    cellule(tr, a.quand, "quand");
+    const c = cellule(tr, a.utilisateur); if (a.role) { const s = document.createElement("small"); s.textContent = " · " + a.role; c.appendChild(s); }
+    cellule(tr, a.action, "action"); cellule(tr, a.cible); cellule(tr, a.detail); cellule(tr, a.ip);
+    corps.appendChild(tr);
+  });
+  if (!d.actions.length) { const tr = document.createElement("tr"); const td = cellule(tr, "Aucune action pour ces critères."); td.colSpan = 6; corps.appendChild(tr); }
+  const fin = debut + d.actions.length;
+  $("resume").replaceChildren(); const b = document.createElement("b"); b.textContent = d.total;
+  $("resume").append(b, ` action(s) · affichage ${d.total ? debut + 1 : 0} à ${fin}`);
+  $("prec").disabled = debut === 0; $("suiv").disabled = fin >= d.total;
+}
+$("filtres").onsubmit = e => { e.preventDefault(); debut = 0; charger(); };
+$("prec").onclick = () => { debut = Math.max(0, debut - PAGE); charger(); };
+$("suiv").onclick = () => { debut += PAGE; charger(); };
+$("csv").onclick = () => {
+  const esc = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const lignes = [["Date et heure", "Compte", "Rôle", "Action", "Sur quoi", "Détail", "Adresse IP"]].concat(derniere.map(a => [a.quand, a.utilisateur, a.role, a.action, a.cible, a.detail, a.ip]));
+  const blob = new Blob(["﻿" + lignes.map(l => l.map(esc).join(";")).join("\r\n")], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "journal-ferme-" + new Date().toISOString().slice(0, 10) + ".csv";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+(async () => {
+  if (!Ferme.peut("admin")) { $("msg").textContent = "Le journal est réservé à l'administrateur."; $("filtres").hidden = true; return; }
+  try { const r = await fetch("/auth/utilisateurs"); if (r.ok) (await r.json()).forEach(u => { const o = document.createElement("option"); o.value = u.identifiant; o.textContent = u.identifiant + " · " + u.nom; $("f_user").appendChild(o); }); } catch (e) {}
+  charger();
+})();
+</script></body></html>

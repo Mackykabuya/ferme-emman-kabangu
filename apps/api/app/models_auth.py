@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, true
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -57,3 +57,17 @@ class AlerteNotifiee(Base):
     __tablename__ = "alertes_notifiees"
     cle: Mapped[str] = mapped_column(String(80), primary_key=True)           # « code:parcelle_id »
     notifiee_le: Mapped[datetime] = mapped_column(DateTime, default=_maintenant)
+
+
+class JournalAction(Base):
+    """Journal des actions : qui a fait quoi, sur quoi, et quand (heure réelle, UTC). Les mots de passe n'y figurent jamais."""
+    __tablename__ = "journal_actions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    at: Mapped[datetime] = mapped_column(DateTime, default=_maintenant, index=True)
+    utilisateur_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    utilisateur: Mapped[str] = mapped_column(String(60), default="")          # identifiant au moment de l'action (reste lisible si le compte est supprimé)
+    role: Mapped[str] = mapped_column(String(12), default="")
+    action: Mapped[str] = mapped_column(String(80))
+    cible: Mapped[str] = mapped_column(String(120), default="")
+    detail: Mapped[str] = mapped_column(String(300), default="")
+    ip: Mapped[str] = mapped_column(String(45), default="")

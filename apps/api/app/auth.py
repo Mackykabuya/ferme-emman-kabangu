@@ -18,7 +18,7 @@ import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -92,13 +92,14 @@ def jeton_courant(creds: HTTPAuthorizationCredentials | None = Depends(_schema))
     return creds.credentials
 
 
-def utilisateur_courant(jeton: str = Depends(jeton_courant), db: Session = Depends(get_db)) -> Utilisateur:
+def utilisateur_courant(request: Request, jeton: str = Depends(jeton_courant), db: Session = Depends(get_db)) -> Utilisateur:
     s = db.scalar(select(SessionAuth).where(SessionAuth.empreinte == _empreinte(jeton)))
     if not s or s.expire_le < _maintenant():
         raise HTTPException(401, "Session expirée ou invalide : reconnectez-vous.", headers={"WWW-Authenticate": "Bearer"})
     u = db.get(Utilisateur, s.utilisateur_id)
     if not u or not u.actif:
         raise HTTPException(401, "Ce compte est désactivé.", headers={"WWW-Authenticate": "Bearer"})
+    request.state.utilisateur = u                      # lu par le journal des actions
     return u
 
 

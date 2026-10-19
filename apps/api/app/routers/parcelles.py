@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -210,8 +210,9 @@ def planifier():
 
 
 @router.post("", status_code=201, dependencies=[Depends(exiger("agronome"))])
-def creer(req: ParcelleIn, db: Session = Depends(get_db)):
+def creer(req: ParcelleIn, request: Request, db: Session = Depends(get_db)):
     from ..seed_parcelles import mesures_defaut
+    request.state.journal_cible = req.nom
     plant = _plante(db, req.plant_id)
     if db.scalar(select(Parcelle.id).where(Parcelle.nom == req.nom)):
         raise HTTPException(409, f"Une parcelle nommée « {req.nom} » existe déjà")
@@ -228,9 +229,13 @@ def detail(pid: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{pid}")
-def modifier(pid: int, req: ParcelleMaj, db: Session = Depends(get_db), u=Depends(exiger("operateur"))):
+def modifier(pid: int, req: ParcelleMaj, request: Request, db: Session = Depends(get_db), u=Depends(exiger("operateur"))):
     p = _get(db, pid)
     ch = req.model_dump(exclude_unset=True)
+    if set(ch) <= {"mesures", "horodatage"}:
+        request.state.journal_ignorer = True                  # mesures envoyées par un capteur : pas dans le journal
+    else:
+        request.state.journal_detail = "Modifié : " + ", ".join(sorted(k for k in ch if k not in ("mesures", "horodatage")))
     if set(ch) & {"nom", "surface_m2", "type_sol", "plant_id", "stade", "latitude", "longitude"} and not a_le_role(u, "agronome"):
         raise HTTPException(403, "Droits insuffisants : changer la culture, le sol, le stade, la surface ou la position demande le rôle "
                                  "« agronome » (un opérateur peut changer le mode et envoyer des mesures).")
@@ -259,8 +264,9 @@ def modifier(pid: int, req: ParcelleMaj, db: Session = Depends(get_db), u=Depend
 
 
 @router.delete("/{pid}", status_code=204, dependencies=[Depends(exiger("agronome"))])
-def supprimer(pid: int, db: Session = Depends(get_db)):
+def supprimer(pid: int, request: Request, db: Session = Depends(get_db)):
     p = _get(db, pid)
+    request.state.journal_cible = p.nom
     for a in [*db.scalars(select(Arrosage).where(Arrosage.parcelle_id == pid)),
               *db.scalars(select(Mesure).where(Mesure.parcelle_id == pid))]:
         db.delete(a)
@@ -269,8 +275,10 @@ def supprimer(pid: int, db: Session = Depends(get_db)):
 
 
 @router.post("/{pid}/vanne", dependencies=[Depends(exiger("operateur"))])
-def vanne(pid: int, cmd: VanneCmd, db: Session = Depends(get_db)):
+def vanne(pid: int, cmd: VanneCmd, request: Request, db: Session = Depends(get_db)):
     p = _get(db, pid)
+    request.state.journal_cible = p.nom
+    request.state.journal_detail = f"ouverte {cmd.duree_min} min" if cmd.action == "ouvrir" else "fermée"
     if cmd.action == "ouvrir":
         _ouvrir(db, p, cmd.duree_min, "manuel")
     elif p.vanne_ouverte:

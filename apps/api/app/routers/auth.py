@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .. import courriel
+from .. import courriel, journal
 from ..auth import (FAUX_HASH, _maintenant, LIBELLES, _empreinte, controler_mdp, exiger, fermer_sessions, hacher, jeton_courant,
                     ouvrir_session, utilisateur_courant, verifier)
 from ..database import get_db
@@ -54,7 +54,7 @@ class Connexion(BaseModel):
 
 
 @router.post("/connexion")
-def connexion(req: Connexion, db: Session = Depends(get_db)):
+def connexion(req: Connexion, request: Request, db: Session = Depends(get_db)):
     """Connexion par e-mail (ou identifiant) et mot de passe. Retourne un jeton à envoyer ensuite dans « Authorization: Bearer <jeton> »."""
     ident = req.identifiant.strip().lower()
     recents = [t for t in _echecs.get(ident, []) if time.time() - t < BLOCAGE_S]
@@ -68,9 +68,11 @@ def connexion(req: Connexion, db: Session = Depends(get_db)):
         raise HTTPException(403, "Votre demande d'inscription est en attente : un administrateur doit la valider avant votre première connexion.")
     if not (u and ok and u.actif):
         _echecs[ident] = [*recents, time.time()]
+        journal.noter(db, None, "Connexion refusée", visiteur=ident[:60], detail="identifiant inconnu, mot de passe faux ou compte désactivé", ip=journal.adresse_ip(request))
         raise HTTPException(401, "E-mail ou mot de passe incorrect.")
     _echecs.pop(ident, None)
     jeton, fin = ouvrir_session(db, u)
+    journal.noter(db, u, "Connexion", ip=journal.adresse_ip(request))
     return {"jeton": jeton, "expire_le": fin.isoformat(), "utilisateur": _vue(u)}
 
 
