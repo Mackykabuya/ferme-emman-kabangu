@@ -195,7 +195,7 @@ def test_migration_ajoute_la_colonne_une_seule_fois(tmp_path):
     c.execute("INSERT INTO utilisateurs (identifiant, mdp_hash) VALUES ('admin', 'x')")
     c.commit(); c.close()
     e = create_engine(f"sqlite:///{f}")
-    assert migration.appliquer(e) == ["utilisateurs.email", "demandes_inscription.email", "utilisateurs.notif_alertes"]
+    assert migration.appliquer(e) == ["utilisateurs.email", "demandes_inscription.email", "utilisateurs.notif_alertes", "utilisateurs.totp_secret", "utilisateurs.totp_actif", "utilisateurs.totp_dernier"]
     assert migration.appliquer(e) == []
     c = sqlite3.connect(f)
     assert c.execute("SELECT identifiant, email FROM utilisateurs").fetchall() == [("admin", None)]

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, true
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, false, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -20,7 +20,17 @@ class Utilisateur(Base):
     email: Mapped[str | None] = mapped_column(String(254), unique=True, nullable=True)        # en minuscules
     actif: Mapped[bool] = mapped_column(default=True)
     notif_alertes: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())     # reçoit les alertes par e-mail
+    totp_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)       # secret de la double authentification (en préparation ou actif)
+    totp_actif: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    totp_dernier: Mapped[int] = mapped_column(Integer, default=0, server_default="0")    # dernière période de 30 s acceptée (un code ne sert qu'une fois)
     cree_le: Mapped[datetime] = mapped_column(DateTime, default=_maintenant)
+
+
+class CodeSecours(Base):
+    __tablename__ = "codes_secours"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    utilisateur_id: Mapped[int] = mapped_column(ForeignKey("utilisateurs.id"), index=True)
+    empreinte: Mapped[str] = mapped_column(String(64), index=True)                   # SHA-256 du code
 
 
 class SessionAuth(Base):

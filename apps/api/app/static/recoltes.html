@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="icon" href="logo-icone.png" type="image/png"><link rel="apple-touch-icon" href="logo-icone.png"><link rel="stylesheet" href="marque.css"><script src="langues-dict.js"></script><script src="langues.js"></script><script src="auth.js"></script><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferme Emman Kabangu · Récoltes et rendements</title>
+<style>
+:root{--fond:#eef2ec;--encre:#17301f;--doux:#5d6f62;--ligne:#d5ddd3;--eau:#1d6fa5;--ok:#2e7d4f;--alerte:#b7791f;--danger:#b3382c}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+header{background:var(--encre);color:#eef6ea;padding:16px 24px}header h1{margin:0;font-size:1.3rem}header p{margin:2px 0 0;color:#a9c4b0}header a{color:#bfe0c9}
+main{padding:14px 24px 30px}
+.filtres{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end;background:#fff;border:1px solid var(--ligne);border-radius:12px;padding:12px 14px}
+.filtres label{display:flex;flex-direction:column;font-size:.85rem;color:var(--doux)}
+input,select,button{font:inherit;padding:7px 10px;border:1px solid var(--ligne);border-radius:6px;background:#fff;color:var(--encre)}
+button{cursor:pointer}button.p{background:var(--eau);border-color:var(--eau);color:#fff;font-weight:600}button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid #7fb6dc;outline-offset:2px}
+.resume{margin:12px 2px;color:var(--doux)}.resume b{color:var(--encre)}
+.tableau{overflow-x:auto;background:#fff;border:1px solid var(--ligne);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--ligne);vertical-align:top}
+th{background:var(--encre);color:#fff;position:sticky;top:0;white-space:nowrap}
+tr:last-child td{border-bottom:0}td.quand{white-space:nowrap;color:var(--doux)}td small{color:var(--doux)}
+.pied{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:12px}
+.msg{min-height:1.4em;color:var(--danger)}
+@media(max-width:700px){main{padding:10px 12px 24px}}
+.carte{background:#fff;border:1px solid var(--ligne);border-radius:12px;padding:12px 14px;margin:0 0 12px}
+.carte h2,section>h2{font-size:1.05rem;margin:0 0 8px}section{margin:0 0 22px}
+.cult{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.cult .carte{margin:0;display:flex;flex-direction:column;gap:6px}.cult h3{margin:0;font-size:1rem}
+.badge{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.8rem;font-weight:600;background:#e4efe4;color:var(--ok)}
+.badge.proche{background:#fbf0d9;color:var(--alerte)}.badge.retard{background:#f9e1dd;color:var(--danger)}.badge.neutre{background:#e8ecef;color:var(--doux)}
+.doux{color:var(--doux);font-size:.88rem}.ligne{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.ligne label{display:flex;flex-direction:column;font-size:.85rem;color:var(--doux)}
+.vide{color:var(--doux);padding:10px 2px}.msg.ok{color:var(--ok)}
+</style><link rel="stylesheet" href="tableau.css"><script src="tableau.js"></script><link rel="manifest" href="/tableau-de-bord/manifest.webmanifest"><meta name="theme-color" content="#17301f"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ferme EK"><script src="/tableau-de-bord/pwa.js"></script></head><body>
+<header><h1><img class="logo" src="logo.png" alt="">Ferme Emman Kabangu</h1><p>Récoltes et rendements · <a href="parcelles.html">Retour aux parcelles</a> · <a href="carte.html">Carte</a></p></header>
+<main>
+  <section><h2>Calendrier des récoltes</h2>
+    <div class="cult" id="en_cours"></div><div class="vide" id="aucune" hidden>Aucune campagne en cours. Ouvrez-en une ci-dessous pour suivre une culture du semis à la récolte.</div></section>
+
+  <section data-min-role="operateur"><h2>Ouvrir une campagne (semis ou plantation)</h2>
+    <form class="carte ligne" id="f_camp">
+      <label>Parcelle<select id="c_parc" required></select></label>
+      <label>Date du semis<input id="c_semis" type="date" required></label>
+      <label>Récolte prévue (facultatif)<input id="c_prevue" type="date"></label>
+      <label>Note (facultatif)<input id="c_note" maxlength="200" placeholder="variété, remarque…"></label>
+      <button class="p" type="submit">Ouvrir la campagne</button></form></section>
+
+  <section><h2>Bilan par plante</h2>
+    <div class="tableau"><table><thead><tr><th>Plante</th><th>Campagnes</th><th>Récolte totale (kg)</th><th>Rendement (kg/ha)</th><th>Eau utilisée (L/kg)</th></tr></thead><tbody id="bilan"></tbody></table></div></section>
+
+  <section><h2>Historique des campagnes</h2>
+    <div class="tableau"><table><thead><tr><th>Parcelle</th><th>Plante</th><th>Semis</th><th>Fin</th><th>Récolte (kg)</th><th>Rendement (kg/ha)</th><th>Eau (L/kg)</th><th></th></tr></thead><tbody id="histo"></tbody></table></div></section>
+
+  <section><h2>Dernières récoltes</h2>
+    <div class="tableau"><table><thead><tr><th>Date</th><th>Parcelle</th><th>Quantité (kg)</th><th>Qualité</th><th>Note</th><th>Saisie par</th><th></th></tr></thead><tbody id="recoltes"></tbody></table></div></section>
+  <div class="msg" id="msg" role="status"></div>
+</main>
+<script>
+const $ = i => document.getElementById(i);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
+const nb = (v, d = 0) => v == null ? "—" : Number(v).toLocaleString(undefined, {maximumFractionDigits: d});
+const date = s => s ? new Date(s + "T12:00:00").toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric"}) : "—";
+const auj = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+function dire(t, ok) { $("msg").textContent = t; $("msg").className = "msg" + (ok ? " ok" : ""); }
+async function api(url, m, b) {
+  const r = await fetch(url, {method: m || "GET", headers: {"Content-Type": "application/json"}, body: b === undefined ? undefined : JSON.stringify(b)});
+  if (r.status === 204) return null;
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : Array.isArray(d.detail) ? d.detail.map(e => e.msg).join(" · ") : "Valeur refusée.");
+  return d;
+}
+function ligne(tbody, cells) { const tr = el("tr"); cells.forEach(c => { const td = el("td"); c instanceof Node ? td.appendChild(c) : td.textContent = c; tr.appendChild(td); }); tbody.appendChild(tr); return tr; }
+function bouton(texte, fn, cls) { const b = el("button", cls || "", texte); b.type = "button"; b.onclick = fn; return b; }
+async function agir(promesse, ok) { try { await promesse; dire(ok, true); await charger(); } catch (e) { dire(e.message, false); } }
+
+function badge(c) {
+  const j = c.jours_avant_recolte;
+  if (j == null) return el("span", "badge neutre", "Récolte non datée");
+  if (j < 0) return el("span", "badge retard", `En retard de ${-j} jours`);
+  if (j === 0) return el("span", "badge proche", "Récolte aujourd'hui");
+  return el("span", "badge" + (j <= 7 ? " proche" : ""), `Récolte dans ${j} jours`);
+}
+function carteCampagne(c) {
+  const k = el("div", "carte");
+  k.appendChild(el("h3", "", `${c.parcelle} · ${c.plante}`));
+  k.appendChild(badge(c));
+  k.appendChild(el("div", "doux", `Semé le ${date(c.semis_le)} (${c.age_jours} jours)` + (c.recolte_prevue_le ? ` · prévue le ${date(c.recolte_prevue_le)}` : "")));
+  if (c.note) k.appendChild(el("div", "doux", c.note));
+  k.appendChild(el("div", "", c.recoltes ? `${nb(c.total_kg, 1)} kg récoltés (${c.recoltes} récolte${c.recoltes > 1 ? "s" : ""})` : "Rien de récolté pour l'instant"));
+  const f = el("form", "ligne"); f.dataset.minRole = "operateur";
+  const q = el("input"); q.type = "number"; q.min = "0.1"; q.step = "any"; q.required = true; q.placeholder = "kg"; q.style.width = "6em"; q.setAttribute("aria-label", "Quantité en kg");
+  const d = el("input"); d.type = "date"; d.value = auj(); d.max = auj(); d.min = c.semis_le; d.required = true; d.setAttribute("aria-label", "Date de la récolte");
+  const ql = el("select"); [["A", "Qualité A"], ["B", "Qualité B"], ["C", "Qualité C"]].forEach(([v, t]) => { const o = el("option", "", t); o.value = v; ql.appendChild(o); }); ql.value = "B";
+  const ok = el("button", "p", "Enregistrer la récolte");
+  f.append(q, d, ql, ok);
+  f.onsubmit = e => { e.preventDefault(); agir(api("/recoltes", "POST", {campagne_id: c.id, date: d.value, quantite_kg: parseFloat(q.value), qualite: ql.value}), "Récolte enregistrée."); };
+  k.appendChild(f);
+  const act = el("div", "ligne"); act.dataset.minRole = "operateur";
+  act.append(bouton("Terminer la campagne", () => { if (confirm(`Terminer la campagne ${c.plante} sur ${c.parcelle} ?`)) agir(api("/recoltes/campagnes/" + c.id, "PUT", {terminee_le: auj()}), "Campagne terminée."); }),
+    bouton("Changer la date prévue", () => { const v = prompt("Nouvelle date de récolte prévue (AAAA-MM-JJ), vide pour l'effacer :", c.recolte_prevue_le || ""); if (v !== null) agir(api("/recoltes/campagnes/" + c.id, "PUT", {recolte_prevue_le: v.trim() || null}), "Date modifiée."); }));
+  k.appendChild(act);
+  return k;
+}
+async function charger() {
+  const [camps, bilan, recs] = await Promise.all([api("/recoltes/campagnes"), api("/recoltes/bilan"), api("/recoltes?jours=365")]);
+  const zone = $("en_cours"); zone.replaceChildren();
+  const enCours = camps.filter(c => c.en_cours).sort((a, b) => (a.recolte_prevue_le || "9999").localeCompare(b.recolte_prevue_le || "9999"));
+  enCours.forEach(c => zone.appendChild(carteCampagne(c)));
+  $("aucune").hidden = enCours.length > 0;
+  const b = $("bilan"); b.replaceChildren();
+  if (!bilan.length) ligne(b, ["Aucune récolte enregistrée pour l'instant.", "", "", "", ""]);
+  bilan.forEach(x => ligne(b, [x.plante, x.campagnes, nb(x.total_kg, 1), nb(x.rendement_kg_ha), nb(x.eau_l_par_kg, 1)]));
+  const h = $("histo"); h.replaceChildren();
+  camps.filter(c => !c.en_cours).forEach(c => {
+    const sup = bouton("Supprimer", () => { if (confirm("Supprimer cette campagne et ses récoltes ?")) agir(api("/recoltes/campagnes/" + c.id, "DELETE"), "Campagne supprimée."); });
+    sup.dataset.minRole = "agronome";
+    ligne(h, [c.parcelle, c.plante, date(c.semis_le), date(c.terminee_le), nb(c.total_kg, 1), nb(c.rendement_kg_ha), nb(c.eau_l_par_kg, 1), sup]);
+  });
+  if (!h.children.length) ligne(h, ["Aucune campagne terminée.", "", "", "", "", "", "", ""]);
+  const r = $("recoltes"); r.replaceChildren();
+  recs.slice(0, 50).forEach(x => {
+    const sup = bouton("Supprimer", () => { if (confirm("Supprimer cette récolte ?")) agir(api("/recoltes/" + x.id, "DELETE"), "Récolte supprimée."); });
+    sup.dataset.minRole = "agronome";
+    ligne(r, [date(x.date), x.parcelle, nb(x.quantite_kg, 1), x.qualite, x.note || "", x.saisi_par, sup]);
+  });
+  if (!r.children.length) ligne(r, ["Aucune récolte dans les 12 derniers mois.", "", "", "", "", "", ""]);
+  document.querySelectorAll("[data-min-role]").forEach(e => Ferme.reserver(e, e.dataset.minRole));
+}
+$("f_camp").onsubmit = e => {
+  e.preventDefault();
+  agir(api("/recoltes/campagnes", "POST", {parcelle_id: +$("c_parc").value, semis_le: $("c_semis").value, recolte_prevue_le: $("c_prevue").value || null, note: $("c_note").value}), "Campagne ouverte.")
+    .then(() => { $("c_note").value = ""; $("c_prevue").value = ""; });
+};
+(async () => {
+  $("c_semis").value = auj();
+  try { (await api("/parcelles")).forEach(p => { const o = el("option", "", p.nom); o.value = p.id; $("c_parc").appendChild(o); }); await charger(); }
+  catch (e) { dire(e.message, false); }
+})();
+</script></body></html>

@@ -10,11 +10,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .. import courriel, journal
+from .. import courriel, journal, totp
 from ..auth import (FAUX_HASH, _maintenant, LIBELLES, _empreinte, controler_mdp, exiger, fermer_sessions, hacher, jeton_courant,
                     ouvrir_session, utilisateur_courant, verifier)
 from ..database import get_db
-from ..models_auth import DemandeInscription, ReinitialisationMdp, Utilisateur
+from ..models_auth import CodeSecours, DemandeInscription, ReinitialisationMdp, Utilisateur
 
 router = APIRouter(prefix="/auth", tags=["Connexion et comptes"])
 Role = Literal["lecteur", "operateur", "agronome", "admin"]
@@ -45,12 +45,28 @@ def _mail_pris(db: Session, mail: str, sauf_id: int | None = None) -> bool:
 
 def _vue(u: Utilisateur) -> dict:
     return {"id": u.id, "identifiant": u.identifiant, "nom": u.nom, "role": u.role, "role_libelle": LIBELLES[u.role],
-            "email": u.email, "actif": u.actif, "notif_alertes": bool(u.notif_alertes)}
+            "email": u.email, "actif": u.actif, "notif_alertes": bool(u.notif_alertes), "double_authentification": bool(u.totp_actif)}
 
 
 class Connexion(BaseModel):
     identifiant: str = Field(min_length=1, max_length=254)       # identifiant OU adresse e-mail
     mot_de_passe: str = Field(min_length=1, max_length=200)
+    code: Optional[str] = Field(default=None, max_length=32)       # code à 6 chiffres de l'application, ou code de secours
+
+
+def _controler_code(db: Session, u: Utilisateur, code: str) -> bool:
+    """Accepte le code TOTP (une seule fois) ou un code de secours (consommé)."""
+    pas = totp.verifier(u.totp_secret or "", code, u.totp_dernier or 0)
+    if pas:
+        u.totp_dernier = pas
+        db.commit()
+        return True
+    ligne = db.scalar(select(CodeSecours).where(CodeSecours.utilisateur_id == u.id, CodeSecours.empreinte == totp.empreinte_secours(code)))
+    if ligne and len(totp.normaliser_secours(code)) == 10:
+        db.delete(ligne)
+        db.commit()
+        return True
+    return False
 
 
 @router.post("/connexion")
@@ -70,6 +86,13 @@ def connexion(req: Connexion, request: Request, db: Session = Depends(get_db)):
         _echecs[ident] = [*recents, time.time()]
         journal.noter(db, None, "Connexion refusée", visiteur=ident[:60], detail="identifiant inconnu, mot de passe faux ou compte désactivé", ip=journal.adresse_ip(request))
         raise HTTPException(401, "E-mail ou mot de passe incorrect.")
+    if u.totp_actif:
+        if not (req.code or "").strip():
+            return {"code_requis": True}                 # mot de passe bon : on réclame le second facteur
+        if not _controler_code(db, u, req.code):
+            _echecs[ident] = [*recents, time.time()]
+            journal.noter(db, u, "Connexion refusée", detail="code de double authentification faux", ip=journal.adresse_ip(request))
+            raise HTTPException(401, "Code incorrect ou déjà utilisé.")
     _echecs.pop(ident, None)
     jeton, fin = ouvrir_session(db, u)
     journal.noter(db, u, "Connexion", ip=journal.adresse_ip(request))
@@ -127,6 +150,95 @@ def changer_email(req: ChangementEmail, u: Utilisateur = Depends(utilisateur_cou
 
 class ChoixNotif(BaseModel):
     actif: bool
+
+
+def _remplacer_secours(db: Session, u: Utilisateur) -> list[str]:
+    for c in db.scalars(select(CodeSecours).where(CodeSecours.utilisateur_id == u.id)):
+        db.delete(c)
+    codes = totp.nouveaux_codes_secours()
+    db.add_all(CodeSecours(utilisateur_id=u.id, empreinte=totp.empreinte_secours(c)) for c in codes)
+    return [totp.afficher_secours(c) for c in codes]
+
+
+class CodeSaisi(BaseModel):
+    mot_de_passe: str = Field(max_length=200)
+    code: Optional[str] = Field(default=None, max_length=32)
+
+
+@router.get("/moi/2fa")
+def etat_2fa(u: Utilisateur = Depends(utilisateur_courant), db: Session = Depends(get_db)):
+    restants = db.scalar(select(func.count(CodeSecours.id)).where(CodeSecours.utilisateur_id == u.id)) or 0
+    return {"actif": bool(u.totp_actif), "codes_secours_restants": restants}
+
+
+@router.post("/moi/2fa/preparer")
+def preparer_2fa(u: Utilisateur = Depends(utilisateur_courant), db: Session = Depends(get_db)):
+    """Génère un nouveau secret (pas encore actif) à scanner ou saisir dans l'application d'authentification."""
+    if u.totp_actif:
+        raise HTTPException(409, "La double authentification est déjà activée.")
+    u.totp_secret = totp.nouveau_secret()
+    db.commit()
+    return {"secret": u.totp_secret, "secret_lisible": totp.groupes(u.totp_secret), "uri": totp.uri(u.totp_secret, u.email or u.identifiant)}
+
+
+class Code(BaseModel):
+    code: str = Field(max_length=32)
+
+
+@router.post("/moi/2fa/activer")
+def activer_2fa(req: Code, u: Utilisateur = Depends(utilisateur_courant), db: Session = Depends(get_db)):
+    """Vérifie un premier code, active la protection et renvoie (une seule fois) les codes de secours."""
+    if u.totp_actif:
+        raise HTTPException(409, "La double authentification est déjà activée.")
+    if not u.totp_secret:
+        raise HTTPException(409, "Commencez par générer un secret.")
+    pas = totp.verifier(u.totp_secret, req.code)
+    if not pas:
+        raise HTTPException(422, "Code incorrect. Vérifiez l'heure du téléphone et réessayez.")
+    u.totp_actif, u.totp_dernier = True, pas
+    codes = _remplacer_secours(db, u)
+    db.commit()
+    return {"codes_secours": codes}
+
+
+@router.post("/moi/2fa/desactiver", status_code=204)
+def desactiver_2fa(req: CodeSaisi, u: Utilisateur = Depends(utilisateur_courant), db: Session = Depends(get_db)):
+    if not u.totp_actif:
+        raise HTTPException(409, "La double authentification n'est pas activée.")
+    if not verifier(req.mot_de_passe, u.mdp_hash):
+        raise HTTPException(403, "Mot de passe incorrect.")
+    if not (req.code or "").strip() or not _controler_code(db, u, req.code):
+        raise HTTPException(403, "Code incorrect ou déjà utilisé.")
+    u.totp_actif, u.totp_secret, u.totp_dernier = False, None, 0
+    for c in db.scalars(select(CodeSecours).where(CodeSecours.utilisateur_id == u.id)):
+        db.delete(c)
+    db.commit()
+
+
+@router.post("/moi/2fa/codes-secours")
+def renouveler_secours(req: CodeSaisi, u: Utilisateur = Depends(utilisateur_courant), db: Session = Depends(get_db)):
+    if not u.totp_actif:
+        raise HTTPException(409, "La double authentification n'est pas activée.")
+    if not verifier(req.mot_de_passe, u.mdp_hash):
+        raise HTTPException(403, "Mot de passe incorrect.")
+    if not (req.code or "").strip() or not _controler_code(db, u, req.code):
+        raise HTTPException(403, "Code incorrect ou déjà utilisé.")
+    codes = _remplacer_secours(db, u)
+    db.commit()
+    return {"codes_secours": codes}
+
+
+@router.delete("/utilisateurs/{uid}/2fa", status_code=204)
+def reinitialiser_2fa(uid: int, admin: Utilisateur = Depends(exiger("admin")), db: Session = Depends(get_db)):
+    """Un administrateur retire la double authentification d'un compte (téléphone et codes de secours perdus)."""
+    cible = db.get(Utilisateur, uid)
+    if not cible:
+        raise HTTPException(404, "Compte introuvable.")
+    cible.totp_actif, cible.totp_secret, cible.totp_dernier = False, None, 0
+    for c in db.scalars(select(CodeSecours).where(CodeSecours.utilisateur_id == uid)):
+        db.delete(c)
+    fermer_sessions(db, uid)
+    db.commit()
 
 
 @router.put("/moi/notifications")

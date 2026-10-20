@@ -12,6 +12,7 @@ from ..database import SessionLocal, get_db
 from ..engine.anomalies import FENETRE_BLOQUE, capteur_suspect
 from ..models import Plant
 from ..auth import a_le_role, exiger
+from ..models_recoltes import Campagne, Recolte
 from ..models_parcelles import Arrosage, Mesure, Parcelle, maintenant
 from ..schemas_decision import DecisionRequest
 from ..schemas_irrigation import Stade
@@ -268,7 +269,9 @@ def supprimer(pid: int, request: Request, db: Session = Depends(get_db)):
     p = _get(db, pid)
     request.state.journal_cible = p.nom
     for a in [*db.scalars(select(Arrosage).where(Arrosage.parcelle_id == pid)),
-              *db.scalars(select(Mesure).where(Mesure.parcelle_id == pid))]:
+              *db.scalars(select(Mesure).where(Mesure.parcelle_id == pid)),
+              *db.scalars(select(Recolte).where(Recolte.parcelle_id == pid)),
+              *db.scalars(select(Campagne).where(Campagne.parcelle_id == pid))]:
         db.delete(a)
     db.delete(p)
     db.commit()

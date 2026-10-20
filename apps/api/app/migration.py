@@ -4,7 +4,9 @@ from sqlalchemy import inspect, text
 
 COLONNES = [("utilisateurs", "email", "VARCHAR(254)"), ("demandes_inscription", "email", "VARCHAR(254)"),
             ("parcelles", "latitude", "FLOAT"), ("parcelles", "longitude", "FLOAT"),
-            ("utilisateurs", "notif_alertes", "BOOLEAN DEFAULT TRUE")]
+            ("utilisateurs", "notif_alertes", "BOOLEAN DEFAULT TRUE"),
+            ("utilisateurs", "totp_secret", "VARCHAR(64)"), ("utilisateurs", "totp_actif", "BOOLEAN DEFAULT FALSE"),
+            ("utilisateurs", "totp_dernier", "INTEGER DEFAULT 0")]
 INDEX = [("ix_utilisateurs_email_unique", "utilisateurs", "email")]
 
 

@@ -15,6 +15,8 @@
       <label>Adresse e-mail<input id="id" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
         <span class="aide">Un ancien identifiant (comme « admin ») fonctionne aussi.</span></label>
       <label>Mot de passe<input id="mdp" type="password" autocomplete="current-password" required></label>
+      <label id="bloc_code" hidden>Code de double authentification<input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" spellcheck="false" maxlength="14">
+        <span class="aide">Code à 6 chiffres de votre application d'authentification, ou un code de secours.</span></label>
       <div id="err" class="message err" role="alert"></div>
       <button class="bouton menthe" id="ok">Se connecter</button>
     </form>
@@ -31,12 +33,16 @@ const $ = i => document.getElementById(i);
 $("f").onsubmit = async e => {
   e.preventDefault(); $("err").textContent = ""; $("ok").disabled = true;
   try {
-    const r = await fetch("/auth/connexion", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({identifiant: $("id").value, mot_de_passe: $("mdp").value})});
+    const r = await fetch("/auth/connexion", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({identifiant: $("id").value, mot_de_passe: $("mdp").value, code: $("code").value || null})});
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Vérifiez les champs.");
+    if (d.code_requis) {                       // mot de passe bon : on demande le second facteur
+      $("bloc_code").hidden = false; $("code").required = true; $("code").focus(); $("ok").disabled = false;
+      $("err").textContent = "Saisissez le code de votre application d'authentification."; return;
+    }
     Ferme.ouvrirSession(d);
     const retour = new URLSearchParams(location.search).get("retour");
     location.replace(/^[a-z]+\.html$/.test(retour || "") ? "/tableau-de-bord/" + retour : "/tableau-de-bord/parcelles.html");
-  } catch (err) { $("err").textContent = err.message; $("mdp").value = ""; $("ok").disabled = false; }
+  } catch (err) { $("err").textContent = err.message; if ($("bloc_code").hidden) $("mdp").value = ""; else $("code").value = ""; $("ok").disabled = false; }
 };
 </script></body></html>
