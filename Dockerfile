@@ -13,7 +13,9 @@ RUN pip install -r apps/api/requirements-ml.txt -r apps/api/requirements-prod.tx
 COPY apps/api apps/api
 COPY ml ml
 # Entraîne les deux modèles à la construction (ignoré si déjà présents dans ml/registry)
-RUN cd ml && ( [ -f registry/diagnostic_latest.joblib ] || python train_diagnostic.py ) \
+# (les jeux de données sont régénérés d'abord : ceux du dépôt peuvent être d'une ancienne version)
+RUN cd ml && python generate_datasets.py --out data \
+    && ( [ -f registry/diagnostic_latest.joblib ] || python train_diagnostic.py ) \
     && ( [ -f registry/irrigation_latest.joblib ] || python train_irrigation.py )
 
 RUN mkdir -p /data/sauvegardes && chown -R ferme:ferme /app /data
@@ -21,4 +23,5 @@ USER ferme
 WORKDIR /app/apps/api
 ENV SAUVEGARDES_DOSSIER=/data/sauvegardes
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*", "--workers", "1"]
+# Le port vient de la variable PORT quand l'hébergeur la fournit (Render), sinon 8000 (docker compose).
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*' --workers 1"]
