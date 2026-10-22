@@ -39,12 +39,12 @@ def test_courriel(u=Depends(utilisateur_courant)):
     if not u.email:
         raise HTTPException(409, "Votre compte n'a pas d'adresse e-mail : ajoutez-la dans « Mon compte ».")
     if not courriel.configure():
-        raise HTTPException(409, "L'envoi d'e-mails n'est pas réglé sur ce serveur (SMTP_HOTE absent du fichier .env).")
+        raise HTTPException(409, "L'envoi d'e-mails n'est pas réglé sur ce serveur (ni SMTP_HOTE ni EMAIL_API dans les réglages).")
     if not courriel.envoyer(u.email, "Ferme Emman Kabangu : e-mail de test",
                             "Bonjour,\n\nSi vous lisez ce message, l'envoi d'e-mails de la ferme fonctionne.\n"
                             "Les alertes seront envoyées aux comptes actifs ayant une adresse e-mail et un rôle "
                             f"« {notifications.ROLE_MIN} » ou plus, toutes les {notifications.MINUTES:g} minutes si besoin."):
-        raise HTTPException(502, "L'envoi a échoué : vérifiez SMTP_* dans le fichier .env (détail dans le journal du serveur).")
+        raise HTTPException(502, "L'envoi a échoué : vérifiez les réglages SMTP_* ou EMAIL_API* (détail dans le journal du serveur).")
     return {"envoye_a": u.email}
 
 

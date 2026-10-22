@@ -35,6 +35,9 @@ services:
       SMTP_MOT_DE_PASSE: ${SMTP_MOT_DE_PASSE:-}
       SMTP_DE: ${SMTP_DE:-}
       SMTP_SSL: ${SMTP_SSL:-}
+      EMAIL_API: ${EMAIL_API:-}
+      EMAIL_API_CLE: ${EMAIL_API_CLE:-}
+      EMAIL_DE: ${EMAIL_DE:-}
       NOTIF_MINUTES: ${NOTIF_MINUTES:-5}
       NOTIF_RAPPEL_H: ${NOTIF_RAPPEL_H:-12}
       NOTIF_ROLE_MIN: ${NOTIF_ROLE_MIN:-agronome}
