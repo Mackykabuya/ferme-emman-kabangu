@@ -1,0 +1,18 @@
+---
+import { t, type Locale } from '../i18n';
+const { locale } = Astro.props as { locale: Locale };
+---
+<figure class="m-0">
+  <svg viewBox="0 0 320 240" role="img" aria-label={t(locale).how.soilLabel} class="w-full h-auto rounded-2xl">
+    <rect width="320" height="240" fill="#cfe6f3" />
+    <rect y="60" width="320" height="180" fill="#6b4c2a" />
+    <rect y="60" width="320" height="14" fill="#1d6b45" />
+    <path d="M40 74 V200 H110" stroke="#1b75a8" stroke-width="8" fill="none" />
+    <path d="M40 74 V200 H110" class="flux" stroke="#9fd3ef" stroke-width="2" fill="none" />
+    <rect x="22" y="40" width="36" height="22" rx="4" fill="#b5703a" />
+    <line x1="220" y1="30" x2="220" y2="200" stroke="#0f2a1d" stroke-width="5" />
+    <circle cx="220" cy="100" r="9" fill="#fff" stroke="#0f2a1d" stroke-width="3" />
+    <circle cx="220" cy="170" r="9" fill="#fff" stroke="#0f2a1d" stroke-width="3" />
+    <path d="M205 20 a22 22 0 0 1 30 0" stroke="#0f2a1d" stroke-width="3" fill="none" />
+  </svg>
+</figure>

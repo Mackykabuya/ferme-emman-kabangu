@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SoilProfile from '../../components/SoilProfile.astro';
+import { t } from '../../i18n';
+import { localeStaticPaths } from '../../i18n/paths';
+import { config } from '../../config';
+export function getStaticPaths() { return localeStaticPaths(); }
+const { locale } = Astro.props;
+const d = t(locale);
+---
+<BaseLayout locale={locale} title={d.tech.title} page="technologie">
+  <div class="wrap pt-14">
+    <h1 class="text-4xl lg:text-5xl font-extrabold">{d.tech.title}</h1>
+    <p class="mt-4 max-w-prose">{d.tech.lead}</p>
+    <p class="mt-6 border-l-4 border-cuivre pl-4 max-w-prose text-sm">{d.tech.status}</p>
+    <div class="mt-12 grid lg:grid-cols-[1fr_20rem] gap-12 items-start">
+      <ul class="grid sm:grid-cols-2 gap-8">
+        {d.tech.features.map((f) => <li><h2 class="text-xl font-bold">{f.title}</h2><p class="mt-2">{f.text}</p></li>)}
+      </ul>
+      <SoilProfile locale={locale} />
+    </div>
+    <div class="mt-12"><a class="btn btn-vert" href={config.appUrl} rel="noopener">{d.tech.cta}</a> <span class="ml-3 text-sm text-seve/70">{d.tech.ctaNote}</span></div>
+  </div>
+</BaseLayout>

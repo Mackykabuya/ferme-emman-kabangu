@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t, localePath } from '../../i18n';
+import { localeStaticPaths } from '../../i18n/paths';
+export function getStaticPaths() { return localeStaticPaths(); }
+const { locale } = Astro.props;
+const d = t(locale);
+---
+<BaseLayout locale={locale} title={d.partnersPage.title} page="partenaires">
+  <div class="wrap pt-14">
+    <h1 class="text-4xl lg:text-5xl font-extrabold">{d.partnersPage.title}</h1>
+    <p class="mt-4 max-w-prose">{d.partnersPage.lead}</p>
+    <div class="mt-10 grid md:grid-cols-3 gap-8">
+      {d.partners.ways.map((w) => (
+        <section class="border-t-4 border-feuille pt-4">
+          <h2 class="text-2xl font-bold">{w.title}</h2>
+          <ul class="mt-3 space-y-2 list-disc pl-5">{d.partnersPage.detail[w.id as 'achat' | 'partenariat' | 'financement'].map((x) => <li>{x}</li>)}</ul>
+          <a class="btn btn-vert mt-5" href={`${localePath(locale, 'contact')}?sujet=${w.id}`}>{w.cta}</a>
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

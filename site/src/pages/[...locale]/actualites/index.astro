@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { t, localePath } from '../../../i18n';
+import { localeStaticPaths } from '../../../i18n/paths';
+export function getStaticPaths() { return localeStaticPaths(); }
+const { locale } = Astro.props;
+const d = t(locale);
+const all = await getCollection('news');
+const slugOf = (id: string) => id.split('/')[1].replace(/\.md$/, '');
+const frs = all.filter((e) => e.id.startsWith('fr/')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const posts = frs.map((p) => ({ e: all.find((x) => x.id.replace(/\.md$/, '') === `${locale}/${slugOf(p.id)}`) ?? p, slug: slugOf(p.id) }));
+---
+<BaseLayout locale={locale} title={d.news.title} page="actualites">
+  <div class="wrap pt-14">
+    <h1 class="text-4xl lg:text-5xl font-extrabold">{d.news.title}</h1>
+    <p class="mt-4 max-w-prose">{d.news.lead}</p>
+    <ul class="mt-10 grid gap-8 max-w-3xl">
+      {posts.map(({ e, slug }) => (
+        <li>
+          <time class="text-sm text-seve/70" datetime={e.data.date.toISOString()}>{e.data.date.toLocaleDateString(d.htmlLang, { dateStyle: 'long' })}</time>
+          <h2 class="text-2xl font-bold mt-1"><a class="hover:underline" href={localePath(locale, `actualites/${slug}`)}>{e.data.title}</a></h2>
+          <p class="mt-2">{e.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>

@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t, localePath } from '../../i18n';
+import { localeStaticPaths } from '../../i18n/paths';
+import { crops } from '../../data/crops';
+import { config } from '../../config';
+export function getStaticPaths() { return localeStaticPaths(); }
+const { locale } = Astro.props;
+const d = t(locale);
+const cats = Object.entries(d.cropsPage.categories) as [keyof typeof d.cropsPage.categories, string][];
+---
+<BaseLayout locale={locale} title={d.cropsPage.title} page="cultures">
+  <div class="wrap pt-14">
+    <h1 class="text-4xl lg:text-5xl font-extrabold">{d.cropsPage.title}</h1>
+    <p class="mt-4 max-w-prose">{d.cropsPage.lead}</p>
+    {cats.map(([id, label]) => (
+      <section class="mt-12">
+        <h2 class="text-2xl font-bold">{label}</h2>
+        <ul class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {crops.filter((c) => c.category === id).map((c) => (
+            <li class="border border-seve/15 rounded-xl p-4 flex items-center justify-between gap-3">
+              <div><p class="font-display font-bold text-lg">{c.names[locale]}</p><p class="text-sm text-seve/70">{d.cropsPage.availability}</p></div>
+              <a class="btn btn-vert !py-2 text-sm" href={`${localePath(locale, 'contact')}?sujet=achat&culture=${encodeURIComponent(c.names[locale])}`}>{d.cropsPage.order}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    <p class="mt-10 max-w-prose">{d.cropsPage.note}</p>
+  </div>
+</BaseLayout>

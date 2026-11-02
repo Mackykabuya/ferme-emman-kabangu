@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/source-sans-3";
+
+@theme {
+  --color-seve: #0f2a1d;
+  --color-seve-2: #17382a;
+  --color-cuivre: #b5703a;
+  --color-cuivre-fonce: #8a4f22;
+  --color-brume: #edf2ec;
+  --color-feuille: #1d6b45;
+  --color-eau: #1b75a8;
+  --color-craie: #fbfcfa;
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Source Sans 3 Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); background: var(--color-craie); color: #1c2b23; font-size: 1.0625rem; line-height: 1.6; }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.015em; line-height: 1.1; color: var(--color-seve); }
+:focus-visible { outline: 3px solid var(--color-eau); outline-offset: 3px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+}
+
+@layer components {
+.wrap { width: min(72rem, 100% - 2rem); margin-inline: auto; }
+.prose-ferme { max-width: 65ch; }
+.prose-ferme p { margin-block: 1em; }
+.prose-ferme h2 { font-size: 1.6rem; margin-top: 2em; }
+.prose-ferme ul { list-style: disc; padding-left: 1.4em; margin-block: 1em; }
+.prose-ferme a { color: var(--color-feuille); text-decoration: underline; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1.25rem; border-radius: .5rem; font-weight: 600; min-height: 2.75rem; transition: background-color .15s, color .15s; }
+.btn-cuivre { background: var(--color-cuivre); color: #fff; }
+.btn-cuivre:hover { background: var(--color-cuivre-fonce); }
+.btn-ligne { border: 2px solid currentColor; }
+.btn-ligne:hover { background: rgb(255 255 255 / .1); }
+.btn-vert { background: var(--color-feuille); color: #fff; }
+.btn-vert:hover { background: var(--color-seve); }
+
+.champ { width: 100%; border: 1.5px solid #9fb3a7; border-radius: .5rem; padding: .7rem .85rem; background: #fff; font: inherit; }
+.champ:focus { border-color: var(--color-eau); }
+.champ[aria-invalid="true"] { border-color: #b42318; }
+
+}
+
+/* Animation du plan de ferme : les parcelles passent du sec à l'irrigué, une seule fois */
+.parcelle-eau { transform-origin: bottom; transform-box: fill-box; transform: scaleY(var(--niveau)); animation: monte 2.4s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--delai); }
+@keyframes monte { from { transform: scaleY(.04); } }
+.flux { stroke-dasharray: 8 10; animation: coule 1.4s linear infinite; }
+@keyframes coule { to { stroke-dashoffset: -18; } }

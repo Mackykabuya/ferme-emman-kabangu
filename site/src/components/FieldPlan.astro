@@ -1,0 +1,39 @@
+---
+import { t, type Locale } from '../i18n';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale);
+// Six parcelles : [culture, taux final d'humidité en %, couleur du sol]
+const parcelles = [
+  { id: 'tomate', niveau: 0.78 }, { id: 'mais', niveau: 0.55 }, { id: 'gombo', niveau: 0.82 },
+  { id: 'manioc', niveau: 0.42 }, { id: 'chou', niveau: 0.7 }, { id: 'papaye', niveau: 0.6 },
+];
+import { crops } from '../data/crops';
+const nom = (id: string) => crops.find((c) => c.id === id)!.names[locale].split(' (')[0];
+const W = 150, H = 110, gap = 14, x0 = 20, y0 = 54;
+---
+<figure class="m-0">
+  <svg viewBox="0 0 520 330" role="img" aria-label={d.hero.planLabel} class="w-full h-auto rounded-2xl bg-seve-2">
+    <rect x="0" y="0" width="520" height="330" fill="#17382a" />
+    <!-- canal principal -->
+    <path d="M20 30 H500" stroke="#1b75a8" stroke-width="10" stroke-linecap="round" />
+    <path d="M20 30 H500" class="flux" stroke="#9fd3ef" stroke-width="2" />
+    {parcelles.map((p, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = x0 + col * (W + gap), y = y0 + row * (H + gap);
+      const eauH = H * p.niveau;
+      return (
+        <g>
+          <path d={`M${x + W / 2} 30 V${y}`} class="flux" stroke="#9fd3ef" stroke-width="2" />
+          <rect x={x} y={y} width={W} height={H} rx="8" fill="#8a6a3f" />
+          <g style={`--niveau:${p.niveau};--delai:${0.3 + i * 0.25}s`} class="parcelle-eau">
+            <rect x={x} y={y} width={W} height={H} rx="8" fill="#1d6b45" opacity="0.85" />
+          </g>
+          <text x={x + 10} y={y + 24} fill="#fff" font-size="15" font-weight="700" font-family="Bricolage Grotesque Variable, sans-serif">{nom(p.id)}</text>
+          <text x={x + 10} y={y + H - 10} fill="#fff" font-size="13">{Math.round(p.niveau * 100)} % {d.hero.moisture}</text>
+        </g>
+      );
+    })}
+  </svg>
+  <figcaption class="mt-2 text-sm text-seve/70">{d.hero.planCaption}</figcaption>
+</figure>

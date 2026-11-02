@@ -6,3 +6,4 @@ apps/api/sauvegardes
 .env
 .git
 *.whl
+site

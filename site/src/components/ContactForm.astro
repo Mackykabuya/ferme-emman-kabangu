@@ -1,0 +1,53 @@
+---
+import { t, type Locale } from '../i18n';
+import { config } from '../config';
+interface Props { locale: Locale; subject?: string }
+const { locale, subject = 'autre' } = Astro.props;
+const d = t(locale).contact;
+const subjects = Object.entries(d.subjects);
+---
+<form id="contact-form" method="post" action="/api/contact" class="grid gap-5 max-w-xl" novalidate data-order={t(locale).cropsPage.orderMessage} data-ok={d.success} data-err={d.errorGeneric} data-human={d.errorHuman} data-limit={d.errorLimit} data-field={d.errorField} data-sending={d.sending} data-send={d.send}>
+  <input type="hidden" name="locale" value={locale} />
+  <div class="hidden" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+  <div><label for="c-name" class="block font-semibold mb-1">{d.name}</label><input class="champ" id="c-name" name="name" required maxlength="100" autocomplete="name" /></div>
+  <div><label for="c-how" class="block font-semibold mb-1">{d.how}</label><input class="champ" id="c-how" name="how" required maxlength="150" autocomplete="email" aria-describedby="c-how-h" /><p id="c-how-h" class="text-sm text-seve/70 mt-1">{d.howHint}</p></div>
+  <div><label for="c-subject" class="block font-semibold mb-1">{d.subject}</label>
+    <select class="champ" id="c-subject" name="subject">{subjects.map(([k, v]) => <option value={k} selected={k === subject}>{v}</option>)}</select></div>
+  <div><label for="c-message" class="block font-semibold mb-1">{d.message}</label><textarea class="champ" id="c-message" name="message" required rows="6" maxlength="3000"></textarea></div>
+  {config.turnstileSiteKey && <div class="cf-turnstile" data-sitekey={config.turnstileSiteKey}></div>}
+  <p class="text-sm text-seve/70">{d.privacy}</p>
+  <div><button class="btn btn-vert" type="submit">{d.send}</button></div>
+  <p id="contact-status" role="status" aria-live="polite" class="font-semibold"></p>
+</form>
+{config.turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>}
+<script>
+  const f = document.getElementById('contact-form') as HTMLFormElement | null;
+  if (f) {
+    const st = document.getElementById('contact-status')!;
+    const btn = f.querySelector('button[type=submit]') as HTMLButtonElement;
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      st.textContent = ''; st.className = 'font-semibold';
+      let bad = false;
+      for (const n of ['name', 'how', 'message']) {
+        const el = f.elements.namedItem(n) as HTMLInputElement;
+        const invalid = !el.value.trim();
+        el.setAttribute('aria-invalid', String(invalid));
+        if (invalid) bad = true;
+      }
+      if (bad) { st.textContent = f.dataset.field!; st.classList.add('text-red-700'); return; }
+      btn.disabled = true; btn.textContent = f.dataset.sending!;
+      try {
+        const body = Object.fromEntries(new FormData(f).entries());
+        const r = await fetch(f.action, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+        if (r.ok) { st.textContent = f.dataset.ok!; st.classList.add('text-feuille'); f.reset(); }
+        else {
+          const j = await r.json().catch(() => ({}));
+          st.textContent = j.error === 'human' ? f.dataset.human! : r.status === 429 ? f.dataset.limit! : f.dataset.err!;
+          st.classList.add('text-red-700');
+        }
+      } catch { st.textContent = f.dataset.err!; st.classList.add('text-red-700'); }
+      btn.disabled = false; btn.textContent = f.dataset.send!;
+    });
+  }
+</script>

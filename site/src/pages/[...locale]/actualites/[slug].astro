@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { t, localePath, locales, defaultLocale } from '../../../i18n';
+export async function getStaticPaths() {
+  const all = await getCollection('news');
+  const slugs = all.filter((e) => e.id.startsWith('fr/')).map((e) => e.id.split('/')[1].replace(/\.md$/, ''));
+  return locales.flatMap((l) => slugs.map((slug) => ({ params: { locale: l === defaultLocale ? undefined : l, slug }, props: { locale: l, slug } })));
+}
+const { locale, slug } = Astro.props;
+const d = t(locale);
+const all = await getCollection('news');
+const find = (l: string) => all.find((e) => e.id.replace(/\.md$/, '') === `${l}/${slug}`);
+const entry = find(locale) ?? find('fr')!;
+const fallback = !find(locale);
+const { Content } = await render(entry);
+---
+<BaseLayout locale={locale} title={entry.data.title} description={entry.data.description} page={`actualites/${slug}`}>
+  <article class="wrap pt-14">
+    <a class="text-feuille underline underline-offset-4" href={localePath(locale, 'actualites')}>{d.news.back}</a>
+    <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold max-w-3xl">{entry.data.title}</h1>
+    <p class="mt-3 text-seve/70">{d.news.published} <time datetime={entry.data.date.toISOString()}>{entry.data.date.toLocaleDateString(d.htmlLang, { dateStyle: 'long' })}</time></p>
+    {fallback && <p class="mt-4 border-l-4 border-cuivre pl-4 text-sm max-w-prose">{d.news.fallback}</p>}
+    <div class="prose-ferme mt-6"><Content /></div>
+  </article>
+</BaseLayout>

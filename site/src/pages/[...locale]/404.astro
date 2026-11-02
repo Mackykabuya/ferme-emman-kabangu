@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t, localePath } from '../../i18n';
+import { localeStaticPaths } from '../../i18n/paths';
+export function getStaticPaths() { return localeStaticPaths(); }
+const { locale } = Astro.props;
+const d = t(locale);
+---
+<BaseLayout locale={locale} title={d.notFound.title} noindex>
+  <div class="wrap pt-20 text-center">
+    <h1 class="text-4xl font-extrabold">{d.notFound.title}</h1>
+    <p class="mt-4">{d.notFound.text}</p>
+    <a class="btn btn-vert mt-8" href={localePath(locale)}>{d.notFound.cta}</a>
+  </div>
+</BaseLayout>

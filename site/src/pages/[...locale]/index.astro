@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FieldPlan from '../../components/FieldPlan.astro';
+import SoilProfile from '../../components/SoilProfile.astro';
+import { getCollection } from 'astro:content';
+import { t, localePath } from '../../i18n';
+import { localeStaticPaths } from '../../i18n/paths';
+import { crops } from '../../data/crops';
+import { config } from '../../config';
+export function getStaticPaths() { return localeStaticPaths(); }
+const { locale } = Astro.props;
+const d = t(locale);
+const all = await getCollection('news');
+const pick = (l: string) => all.filter((e) => e.id.startsWith(l + '/'));
+const slugOf = (id: string) => id.split('/')[1].replace(/\.md$/, '');
+const frs = pick('fr').sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).slice(0, 3);
+const posts = frs.map((p) => pick(locale).find((e) => slugOf(e.id) === slugOf(p.id)) ?? p);
+---
+<BaseLayout locale={locale}>
+  <section class="bg-seve text-white">
+    <div class="wrap grid lg:grid-cols-2 gap-10 items-center py-14 lg:py-20">
+      <div>
+        <h1 class="text-white text-5xl lg:text-6xl font-extrabold">{d.hero.title}</h1>
+        <p class="mt-6 text-lg text-white/85 max-w-prose">{d.hero.lead}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a class="btn btn-cuivre" href={localePath(locale, 'cultures')}>{d.hero.ctaCrops}</a>
+          <a class="btn btn-ligne" href={localePath(locale, 'contact')}>{d.hero.ctaContact}</a>
+        </div>
+      </div>
+      <FieldPlan locale={locale} />
+    </div>
+  </section>
+
+  <section class="wrap mt-20">
+    <h2 class="text-3xl lg:text-4xl font-bold">{d.cropsHome.title}</h2>
+    <p class="mt-3 max-w-prose">{d.cropsHome.lead}</p>
+    <ul class="mt-8 flex flex-wrap gap-2">
+      {crops.map((c) => <li class="px-4 py-2 rounded-full bg-brume text-seve font-semibold">{c.names[locale]}</li>)}
+    </ul>
+    <a class="btn btn-vert mt-8" href={localePath(locale, 'cultures')}>{d.cropsHome.cta}</a>
+  </section>
+
+  <section class="mt-20 bg-brume py-16">
+    <div class="wrap grid lg:grid-cols-[1fr_22rem] gap-12 items-start">
+      <div>
+        <h2 class="text-3xl lg:text-4xl font-bold">{d.how.title}</h2>
+        <p class="mt-3 max-w-prose">{d.how.lead}</p>
+        <ol class="mt-8 grid sm:grid-cols-2 gap-6">
+          {d.how.steps.map((s, i) => (
+            <li><span class="font-display text-cuivre-fonce font-bold text-lg">{i + 1}. {s.title}</span><p class="mt-1">{s.text}</p></li>
+          ))}
+        </ol>
+        <p class="mt-8 text-sm border-l-4 border-cuivre pl-4 max-w-prose">{d.how.note}</p>
+      </div>
+      <SoilProfile locale={locale} />
+    </div>
+  </section>
+
+  <section class="wrap mt-20">
+    <h2 class="text-3xl lg:text-4xl font-bold">{d.partners.title}</h2>
+    <p class="mt-3 max-w-prose">{d.partners.lead}</p>
+    <div class="mt-8 grid md:grid-cols-3 gap-6">
+      {d.partners.ways.map((w) => (
+        <div class="border-t-4 border-feuille pt-4">
+          <h3 class="text-2xl font-bold">{w.title}</h3>
+          <p class="mt-2">{w.text}</p>
+          <a class="inline-block mt-4 font-semibold text-feuille underline underline-offset-4" href={`${localePath(locale, 'contact')}?sujet=${w.id}`}>{w.cta}</a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  {posts.length > 0 && (
+    <section class="wrap mt-20">
+      <h2 class="text-3xl lg:text-4xl font-bold">{d.news.latest}</h2>
+      <ul class="mt-8 grid md:grid-cols-3 gap-6">
+        {posts.map((p) => (
+          <li>
+            <time class="text-sm text-seve/70" datetime={p.data.date.toISOString()}>{p.data.date.toLocaleDateString(d.htmlLang, { dateStyle: 'long' })}</time>
+            <h3 class="text-xl font-bold mt-1"><a class="hover:underline" href={localePath(locale, `actualites/${slugOf(p.id)}`)}>{p.data.title}</a></h3>
+            <p class="mt-2">{p.data.description}</p>
+          </li>
+        ))}
+      </ul>
+      <a class="inline-block mt-6 font-semibold text-feuille underline underline-offset-4" href={localePath(locale, 'actualites')}>{d.news.all}</a>
+    </section>
+  )}
+
+  <section class="wrap mt-20">
+    <div class="bg-seve text-white rounded-2xl p-8 lg:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div><h2 class="text-white text-3xl font-bold">{d.band.title}</h2><p class="mt-2 text-white/85 max-w-prose">{d.band.text}</p></div>
+      <div class="flex flex-wrap gap-3">
+        <a class="btn btn-cuivre" href={localePath(locale, 'contact')}>{d.band.cta}</a>
+        {config.whatsapp && <a class="btn btn-ligne" href={`https://wa.me/${config.whatsapp}`}>{d.band.whatsapp}</a>}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
